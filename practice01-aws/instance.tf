@@ -11,7 +11,7 @@ resource "aws_instance" "jenkins" {
   ]
 
   tags = {
-    Name = "ec2"
+    Name = "jenkins"
   }
 }
 
