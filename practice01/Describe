@@ -1,9 +1,0 @@
-# VPC 10.0.0.0/16
-# Public Subnet 10.0.1.0/24, Private Subnet 10.0.2.0/24
-# Route Table
-# Internet Gateway
-# Nat Gateway
-# Elastic IP
-# Security Group
-# Key Pair
-# Instance 1ea
