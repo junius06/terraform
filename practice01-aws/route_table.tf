@@ -47,6 +47,11 @@ resource "aws_route_table_association" "route_table_association_1" {
   route_table_id = aws_route_table.route_table_public.id
 }
 
+resource "aws_route_table_association" "route_table_association_2" {
+  subnet_id = aws_subnet.public-subnet-02.id
+  route_table_id = aws_route_table.route_table_public.id
+}
+
 resource "aws_route" "public_internet_gateway" {
   route_table_id = aws_route_table.route_table_public.id
   destination_cidr_block = "0.0.0.0/0"
@@ -54,8 +59,13 @@ resource "aws_route" "public_internet_gateway" {
 }
 
 # Private Subnet 연결
-resource "aws_route_table_association" "route_table_association_2" {
+resource "aws_route_table_association" "route_table_association_3" {
   subnet_id = aws_subnet.private-subnet-01.id
+  route_table_id = aws_route_table.route_table_private.id
+}
+
+resource "aws_route_table_association" "route_table_association_4" {
+  subnet_id = aws_subnet.private-subnet-02.id
   route_table_id = aws_route_table.route_table_private.id
 }
 
