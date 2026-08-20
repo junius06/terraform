@@ -1,0 +1,10 @@
+vpc_peer_name           : "{ENV}-fmm-{REGION}-pcx-eks-to-legacy"
+vpc_peer_requester_config :
+  requester_vpc    : "{ENV}-fmm-{REGION}-vpc"
+  requester_account : "613755508382"
+  requester_region : "us-west-2"
+vpc_peer_accepter_config :
+  accepter_vpc : "vpc-a3cd38c6"
+  accepter_account : "613755508382"
+  accepter_region : "us-west-2"
+vpc_peer_sub_tags: {}

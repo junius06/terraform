@@ -1,0 +1,39 @@
+##################################
+# s3
+##################################
+# 필수 태깅
+#"SEC_ASSETS_PUBLIC": "N"
+#"SEC_ASSETS_PII": "N"
+
+s3_kms_arn: ""
+s3_versioning: "Disabled"
+s3_tags:
+  "Name": "{ENV}-fmm-{REGION}-s3-vpcflow"
+  "SEC_ASSETS_PUBLIC": "N"
+  "SEC_ASSETS_PII": "N"
+s3_object_lock: "Disabled"
+s3_logging:
+  s3_logging_target: "{ENV}-fmm-{REGION}-s3-bucket-logging"
+  s3_logging_target_prefix: "{ENV}-fmm-{REGION}-s3-vpcflow/"
+  s3_logging_target_object_key_format: "simple_prefix"
+  s3_logging_partitioned_prefix_type: ""
+s3_lifecycle: []
+s3_policy: {
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": [
+        "arn:aws:s3:::{ENV}-fmm-{REGION}-s3-vpcflow",
+        "arn:aws:s3:::{ENV}-fmm-{REGION}-s3-vpcflow/*"
+      ],
+      "Condition": {
+        "Bool": {
+          "aws:SecureTransport": "false"
+        }
+      }
+    }
+  ]
+}
