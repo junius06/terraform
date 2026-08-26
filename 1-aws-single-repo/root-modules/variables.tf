@@ -53,8 +53,17 @@ variable "svc_vpc_cidr" {
   type = string
 }
 
-variable "svc_private_subnet_cidrs" {
+variable "eks_cluster_private_subnet_cidrs" {
   type = map(string)
+}
+
+variable "svc_private_subnet_groups" {
+  description = "Private subnet groups for SVC VPC"
+
+  type = map(object({
+    cidrs      = map(string)
+    enable_nat = bool
+  }))
 }
 
 ##### DB-VPC
@@ -83,19 +92,41 @@ variable "ecr_repositories" {
 }
 
 
+###################################### 
+# EC2
+######################################
+variable "bastion_instance_type" {
+  description = "EC2 Instance Type for Bastion"
+  type        = string
+}
 
+###################################### 
+# EKS
+######################################
+variable "eks_version" {
+  description = "EKS Version"
+  type        = string
+}
 
+variable "eks_node_groups" {
+  description = "EKS managed node groups"
 
-
+  type = map(object({
+    instance_types = list(string)
+    desired_size   = number
+    min_size       = number
+    max_size       = number
+  }))
+}
 
 
 ###################################### 
 # ACCOUNT 검증용 나중에 추가
 ######################################
-variable "aws_profile" {
-  type = string
-}
+# variable "aws_profile" {
+#   type = string
+# }
 
-variable "aws_account_id" {
-  type        = string
-}
+# variable "aws_account_id" {
+#   type        = string
+# }

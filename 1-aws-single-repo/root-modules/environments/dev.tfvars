@@ -22,10 +22,39 @@ mgmt_public_subnet_cidrs = {
 # VPC
 svc_vpc_cidr        = "10.10.0.0/16"
 
-svc_private_subnet_cidrs = {
-    a = "10.10.1.0/24"
-    b = "10.10.2.0/24"
+eks_cluster_private_subnet_cidrs = {
+  a = "10.10.0.0/25",
+  b = "10.10.0.128/25"
 }
+svc_private_subnet_groups = {
+  svc = {
+    cidrs = {
+      a = "10.10.1.0/24"
+      b = "10.10.2.0/24"
+    }
+    enable_nat = false
+  }
+
+  ops = {
+    cidrs = {
+      a = "10.10.11.0/24"
+      b = "10.10.12.0/24"
+    }
+    enable_nat = false
+  }
+
+  kpt = {
+    cidrs = {
+      a = "10.10.21.0/24"
+      b = "10.10.22.0/24"
+    }
+    enable_nat = false
+  }
+}
+# 나중에  인터넷 Egress 설계 방법을 결정한 후, 아래 중 하나를 선택해서 Module 확장.
+# 방안 1: SVC VPC 자체 NAT Gateway
+# 방안 2: 별도 Egress VPC
+# 방안 3: Firewall/TGW를 통한 중앙집중식 Egress
 
 # ============================================================
 # DB
@@ -41,9 +70,8 @@ db_private_subnet_cidrs = {
 # ============================================================
 # S3
 # ============================================================
-s3_bucket = [
-  "my-app-bucket",
-  "my-app-bucket/*"
+s3_buckets = [
+  "my-app-bucket"
 ]
 
 # ============================================================
@@ -53,3 +81,34 @@ ecr_repositories = [
   "my-app1",
   "my-app2"
 ]
+
+# ============================================================
+# EC2
+# ============================================================
+bastion_instance_type = "t4g.micro"
+
+# ============================================================
+# EKS
+# ============================================================
+eks_version = "1.36"
+
+eks_node_groups = {
+  svc = {
+    instance_types = ["m8g.medium"]
+    desired_size   = 2
+    min_size       = 2
+    max_size       = 6
+  }
+  ops = {
+    instance_types = ["m8g.medium"]
+    desired_size   = 2
+    min_size       = 2
+    max_size       = 4
+  }
+  kpt = {
+    instance_types = ["m8g.medium"]
+    desired_size   = 2
+    min_size       = 2
+    max_size       = 4
+  }
+}

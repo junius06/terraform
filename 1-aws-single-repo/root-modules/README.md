@@ -55,7 +55,8 @@ aws-infra/
         └── prd.hcl
 ```
 
-# 구성
+# 인프라 구성
+```
                          Internet
                             │
                          IGW │
@@ -101,3 +102,33 @@ aws-infra/
                   │ ❌ IGW         │
                   │ ❌ NAT         │
                   └────────────────┘
+```
+
+## S3 구조
+```
+root-modules/
+├── s3.tf
+├── iam.tf
+│
+├── s3/
+│   ├── common/
+│   │   ├── eks-loki-admin.yaml
+│   │   ├── eks-loki-ruler.yaml
+│   │   ├── eks-loki-chunks.yaml
+│   │   └── ...
+│   │
+│   └── environments/
+│       ├── dev/
+│       ├── stg/
+│       └── prd/
+│
+└── iam/
+    ├── common/
+    │   ├── loki-role.yaml
+    │   └── ...
+    │
+    └── environments/
+        ├── dev/
+        ├── stg/
+        └── prd/
+```

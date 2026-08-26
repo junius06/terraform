@@ -1,3 +1,30 @@
+variable "public_subnet_cidrs" {
+  type    = map(string)
+  default = {}
+}
+
+variable "private_subnet_cidrs" {
+  type    = map(string)
+  default = {}
+}
+
+variable "eks_cluster_private_subnet_cidrs" {
+  type    = map(string)
+  default = {}
+}
+
+variable "eks_node_subnet_groups" {
+  type = map(object({
+    cidrs      = map(string)
+    enable_nat = bool
+  }))
+  default = {}
+}
+
+
+
+
+# Mingyue Code
 variable "region_code" {
   type = string
 }

@@ -1,0 +1,22 @@
+role_name_suffix: role-loki
+
+trusted_service: pods.eks.amazonaws.com
+
+trusted_actions:
+  - sts:AssumeRole
+  - sts:TagSession
+
+s3_access:
+  buckets:
+    - eks-loki-admin
+    - eks-loki-ruler
+    - eks-loki-chunks
+
+  bucket_actions:
+    - s3:ListBucket
+    - s3:GetBucketLocation
+
+  object_actions:
+    - s3:GetObject
+    - s3:PutObject
+    - s3:DeleteObject

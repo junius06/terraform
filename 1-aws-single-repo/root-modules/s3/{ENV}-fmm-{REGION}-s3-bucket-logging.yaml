@@ -45,7 +45,7 @@ s3_policy: {
       "Resource": "arn:aws:s3:::{environment}-{region_code}-s3-bucket-logging/*",
       "Condition": {
           "StringEquals": {
-              "aws:SourceAccount": "613755508382"
+              "aws:SourceAccount": "1234567890"
           }
       }
     }

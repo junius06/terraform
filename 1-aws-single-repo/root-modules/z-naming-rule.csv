@@ -1,0 +1,21 @@
+Resource Name,Rule,EX
+VPC,${var.project}-${var.environment}-${local.region_name}-mgmt,
+,${var.project}-${var.environment}-${local.region_name}-svc,
+,${var.project}-${var.environment}-${local.region_name}-db,
+VPC-PEER,${var.project}-${var.environment}-${local.region_name}-mgmt-svc-pcx
+,${var.project}-${var.environment}-${local.region_name}-svc-db-pcx,
+PRIVATE-SUBNET,
+
+PUBLIC-SUBNET
+,,
+,
+
+EC2,${var.project}-${var.environment}-${var.region_name}-bastion,
+ROLE,${var.project}-${var.environment}-${var.region_name}-bastion-role
+g
+f
+f
+f
+EKS CLUSTER,${var.project}-${var.environment}-${local.region_name}-eks-cluster
+NODE GROUP,${var.project}-${var.environment}-${local.region_name}-eks-ng-${each.key}
+S3 BUCKET,${var.project}-${var.environment}-${local.region_name}-${each.value.name}

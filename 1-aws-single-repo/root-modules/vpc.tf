@@ -2,10 +2,7 @@
 # MGMT
 # ============================================================
 module "mgmt_vpc" {
-  source = "git@github.com:junius06/terraform-aws-vpc.git?ref=main"
-
-  # child modules 와 레포지토리가 동일한 경우
-  # source = "../child-modules/terraform-aws-vpc"
+  source = "../child-modules/terraform-aws-vpc"
 
   name = "${var.project}-${var.environment}-${local.region_name}-mgmt"
 
@@ -36,8 +33,7 @@ module "mgmt_vpc" {
 # SVC
 # ============================================================
 module "svc_vpc" {
-  source = "git@github.com:junius06/terraform-aws-vpc.git?ref=main"
-  # source = "../child-modules/terraform-aws-vpc"
+  source = "../child-modules/terraform-aws-vpc"
 
   name = "${var.project}-${var.environment}-${local.region_name}-svc"
 
@@ -47,19 +43,19 @@ module "svc_vpc" {
 
   vpc_cidr    = var.svc_vpc_cidr
 
-  public_subnet_cidrs = {}
-  private_subnet_cidrs  = var.svc_private_subnet_cidrs
+  public_subnet_cidrs              = {}
+  eks_cluster_private_subnet_cidrs = var.eks_cluster_private_subnet_cidrs
+  eks_node_subnet_groups           = var.svc_private_subnet_groups
 
-  create_internet_gateway   = false
-  create_nat_gateway        = false
+  create_internet_gateway     = false
 
-  create_s3_endpoint        = true
-  create_ecr_endpoint       = true
+  create_s3_endpoint          = true
+  create_ecr_endpoint         = true
 
   tags = merge(
     local.common_tags,
     {
-      type    = "mgmt"
+      type    = "svc"
     }
   )
 }
@@ -68,8 +64,7 @@ module "svc_vpc" {
 # DB
 # ============================================================
 module "db_vpc" {
-  source = "git@github.com:junius06/terraform-aws-vpc.git?ref=main"
-  # source = "../child-modules/terraform-aws-vpc"
+  source = "../child-modules/terraform-aws-vpc"
 
   name = "${var.project}-${var.environment}-${local.region_name}-db"
 
@@ -91,7 +86,7 @@ module "db_vpc" {
   tags = merge(
     local.common_tags,
     {
-      type    = "mgmt"
+      type    = "db"
     }
   )
 }
