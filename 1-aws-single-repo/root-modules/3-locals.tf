@@ -1,23 +1,21 @@
 locals {
   region_map = {
     "eu-west-1" = {
-      name = "ireland"
-      code = "ew1"
+      name   = "ireland"
+      code   = "ew1"
+      prefix = "eu"
     }
 
     "us-west-2" = {
-      name = "oregon"
-      code = "uw2"
-    }
-
-    "ap-northeast-2" = {
-      name = "seoul"
-      code = "an2"
+      name   = "oregon"
+      code   = "uw2"
+      prefix = "us"
     }
   }
 
-  region_name = local.region_map[var.aws_region].name
-  region_code = local.region_map[var.aws_region].code
+  region_name   = local.region_map[var.aws_region].name
+  region_code   = local.region_map[var.aws_region].code
+  region_prefix = local.region_map[var.aws_region].prefix
 
   # ECR
   ecr_repository_arns = [
@@ -35,6 +33,8 @@ locals {
 
   # TAGS
   common_tags = {
-    project = var.project
+    Project      = var.project
+    Environment  = var.environment
+    ManagedBy    = "Terraform"
   }
 }

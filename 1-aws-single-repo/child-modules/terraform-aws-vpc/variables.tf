@@ -1,80 +1,99 @@
-variable "public_subnet_cidrs" {
-  type    = map(string)
-  default = {}
-}
-
-variable "private_subnet_cidrs" {
-  type    = map(string)
-  default = {}
-}
-
-variable "eks_cluster_private_subnet_cidrs" {
-  type    = map(string)
-  default = {}
-}
-
-variable "eks_node_subnet_groups" {
-  type = map(object({
-    cidrs      = map(string)
-    enable_nat = bool
-  }))
-  default = {}
-}
-
-
-
-
-# Mingyue Code
-variable "region_code" {
-  type = string
-}
-
+######################################
+# VPC
+######################################
 variable "vpc_name" {
   type = string
 }
 
 variable "vpc_cidr" {
-  description = "CIDR Block for the VPC"
-  type        = string
+  type = string
+}
+
+variable "aws_region" {
+  type = string
+}
+
+variable "region_name" {
+  type = string
+}
+
+variable "region_code" {
+  type = string
+}
+
+variable "region_prefix" {
+  type = string
 }
 
 variable "enable_dns_support" {
-  description = "Should be true to enable DNS support in the VPC"
-  type        = bool
-  default     = true
+  type    = bool
+  default = true
 }
 
 variable "enable_dns_hostnames" {
-  description = "Should be true to enable DNS hostnames in the VPC"
-  type        = bool
-  default     = true
+  type    = bool
+  default = true
 }
 
-variable "public_subnet" {
-  description = "Map of public subnets"
-  type = list(object({
-    subnet_cidr = string
-    tags        = map(string)
+######################################
+# Public Subnet Groups
+######################################
+variable "public_subnet_groups" {
+  type = map(object({
+    cidrs = map(string)
   }))
 }
 
-variable "private_subnet" {
-  description = "Map of private subnets"
-  type = list(object({
-    subnet_cidr = string
-    tags        = map(string)
+######################################
+# Private Subnet Groups
+######################################
+variable "private_subnet_groups" {
+  type = map(object({
+    cidrs = map(string)
+
+    # NAT OutBound Route 사용 여부: 기본 false, root-modules/tfvars-env/{env}.tfvars 에서 핸들링
+    enable_nat = optional(bool, false)
   }))
+}
+
+######################################
+# Internet Gateway
+######################################
+variable "create_internet_gateway" {
+  type    = bool
+  default = false
+}
+
+######################################
+# NAT Gateway
+######################################
+variable "create_nat_gateway" {
+  type    = bool
+  default = false
+}
+
+variable "nat_gateway_subnet_group" {
+  type        = string
+  description = "Public Subnet Group in which NAT Gateways are created."
+}
+
+######################################
+# VPC Flow Log
+######################################
+variable "enable_vpc_flow_log" {
+  type    = bool
+  default = true
 }
 
 variable "vpc_flow_log_s3_name" {
-  description = "VPC Flow Log S3 Bucket Name"
   type        = string
+  description = "S3 Bucket ARN for VPC Flow Logs from S3 Module Output"
 }
 
-################################################################################
-# NAT Gateway
-################################################################################
-variable "public_nat_gateway_subnets" {
-  description = "Subnets for NAT placement"
-  type        = list(string)
+######################################
+# Tags
+######################################
+variable "tags" {
+  type    = map(string)
+  default = {}
 }

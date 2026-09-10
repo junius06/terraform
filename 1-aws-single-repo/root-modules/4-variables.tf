@@ -1,10 +1,10 @@
+###################################### 
+# 운영을 위한 기본 변수
+######################################
 variable "project" {
   type = string
 }
 
-###################################### 
-# 구축/운영 환경
-######################################
 variable "environment" {
   type = string
 
@@ -27,8 +27,7 @@ variable "aws_region" {
   validation {
     condition = contains([
       "eu-west-1",
-      "us-west-2",
-      "ap-northeast-2"
+      "us-west-2"
     ], var.aws_region)
 
     error_message = "Supported regions are eu-west-1, us-west-2, ap-northeast-2."
@@ -39,40 +38,30 @@ variable "aws_region" {
 ###################################### 
 # VPC
 ######################################
-##### MGMT-VPC
-variable "mgmt_vpc_cidr" {
-  type = string
-}
-
-variable "mgmt_public_subnet_cidrs" {
-  type = map(string)
-}
-
-##### SVC-VPC
+# SVC-VPC
 variable "svc_vpc_cidr" {
   type = string
 }
 
-variable "eks_cluster_private_subnet_cidrs" {
-  type = map(string)
+variable "svc_public_subnet_groups" {
+  type = map(object({
+    cidrs = map(string)
+  }))
+
+  description = "Public subnet groups for SVC-VPC"
 }
 
 variable "svc_private_subnet_groups" {
-  description = "Private subnet groups for SVC VPC"
-
   type = map(object({
     cidrs      = map(string)
     enable_nat = bool
   }))
+
+  description = "Private subnet groups for SVC-VPC"
 }
 
-##### DB-VPC
-variable "db_vpc_cidr" {
-  type = string
-}
-
-variable "db_private_subnet_cidrs" {
-  type = map(string)
+variable "enable_vpc_flow_log" {
+  type = bool
 }
 
 
@@ -96,8 +85,8 @@ variable "ecr_repositories" {
 # EC2
 ######################################
 variable "bastion_instance_type" {
-  description = "EC2 Instance Type for Bastion"
   type        = string
+  description = "EC2 Instance Type for EKS Bastion"
 }
 
 ###################################### 

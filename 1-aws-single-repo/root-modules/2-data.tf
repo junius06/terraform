@@ -37,3 +37,13 @@ data "aws_ami" "amazon_linux_2023_arm64" {
     values = ["available"]
   }
 }
+
+# ============================================================
+# DB VPC 정보 조회
+# ============================================================
+data "aws_vpc" "db" {
+  filter {
+    name   = "tag:Name"                 # Tag "Name"의 값으로 VPC 조회
+    values = ["FLSTG_EUWEST1_VPC_ID"]   # 환경마다 VPC Name 확인, 변경 필요
+  }
+}

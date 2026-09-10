@@ -1,0 +1,2 @@
+name,purpose,versioning,public_access_block,encryption,policy_file
+svc-vpc-flow-log,vpc-flow-log,false,true,AES256,vpc-flow-log.json.tftpl
