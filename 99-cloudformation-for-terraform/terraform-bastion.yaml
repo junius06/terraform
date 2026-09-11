@@ -1,0 +1,526 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: >
+  Terraform Bastion bootstrap infrastructure.
+  Creates VPC, Public Subnet, IGW, Route Table,
+  Security Group and AL2023 ARM64 Terraform Bastion.
+
+
+Parameters:
+  Project:
+    Type: String
+    Default: fmm
+  Env:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - stg
+      - prd
+  User:
+    Type: String
+    Default: fmmsysops
+
+  VpcCidr:
+    Type: String
+    Default: 10.0.0.0/26
+  PublicSubnetCidr:
+    Type: String
+    Default: 10.0.0.0/28
+  AllowedSshIp:
+    Type: String # Input 0.0.0.0 "No Prefix"
+
+  InstanceType:
+    Type: String
+    Default: t4g.micro
+  TerraformVersion:
+    Type: String
+    Default: "1.16.2" # 2026.09.11 기준 최신 버전
+
+  IPAClientObject:
+    Type: String
+    Default: "ipa-client.v2-2026-01.tar.gz"
+  IPAEnrollKey:
+    Type: String
+    NoEcho: true
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: "General Configuration"
+        Parameters:
+          - Project
+          - Env
+
+      - Label:
+          default: "Network Configuration"
+        Parameters:
+          - VpcCidr
+          - PublicSubnetCidr
+          - AllowedSshIp
+
+      - Label:
+          default: "Bastion Configuration"
+        Parameters:
+          - InstanceType
+          - TerraformVersion
+
+      - Label:
+          default: "Terraform Configuration"
+        Parameters:
+          - IPAEnrollKey
+          - IPAClientObject
+
+    ParameterLabels:
+      Project:
+        default: "Project"
+
+      Env:
+        default: "Environment"
+
+      VpcCidr:
+        default: "VPC CIDR"
+
+      PublicSubnetCidr:
+        default: "Public Subnet CIDR"
+
+      AllowedSshIp:
+        default: "Allowed SSH IP: x.x.x.x"
+
+      InstanceType:
+        default: "Instance Type"
+
+      TerraformVersion:
+        default: "Terraform Version"
+
+      IPAEnrollKey:
+        default: "IPA Enrollment Key"
+
+      IPAClientObject:
+        default: "IPA Client S3 URL"
+
+Mappings:
+  RegionMap:
+    eu-west-1:
+      RegionName: ireland
+      RegionCode: ew1
+      AMI: ami-0c8fa3e43097681d9
+
+    us-west-2:
+      RegionName: oregon
+      RegionCode: uw2
+      AMI: ami-03276ef3c357204ce
+
+  EnvMap:
+    dev:
+      Account: fmm-dev
+      S3Bucket: s3-uw2-resource-parser-01
+    stg:
+      Account: fmm-stg
+      S3Bucket: s3-uw2-resource-parser-01
+    prd:
+      Account: fmm-prod
+      S3Bucket: s3-uw2-resource-parser-02
+
+Resources:
+  # VPC
+  TerraformVpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCidr
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - ${Project}-${Env}-${RegionName}-terraform-vpc
+            - RegionName: !FindInMap
+                - RegionMap
+                - !Ref AWS::Region
+                - RegionName
+
+        - Key: ENV
+          Value: !Ref Env
+
+        - Key: ManagedBy
+          Value: CloudFormation
+
+  # Internet Gateway
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - ${Project}-${Env}-${RegionName}-terraform-igw
+            - RegionName: !FindInMap
+                - RegionMap
+                - !Ref AWS::Region
+                - RegionName
+
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref TerraformVpc
+      InternetGatewayId: !Ref InternetGateway
+
+  # Public Subnet
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref TerraformVpc
+      CidrBlock: !Ref PublicSubnetCidr
+
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs ""
+
+      MapPublicIpOnLaunch: true
+
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - ${Project}-${Env}-${RegionName}-terraform-pub-a
+            - RegionName: !FindInMap
+                - RegionMap
+                - !Ref AWS::Region
+                - RegionName
+
+        - Key: ENV
+          Value: !Ref Env
+
+        - Key: ManagedBy
+          Value: CloudFormation
+
+  # Public Route Table
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref TerraformVpc
+
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - ${Project}-${Env}-${RegionName}-terraform-pub-rt
+            - RegionName: !FindInMap
+                - RegionMap
+                - !Ref AWS::Region
+                - RegionName
+
+        - Key: ENV
+          Value: !Ref Env
+
+        - Key: ManagedBy
+          Value: CloudFormation
+
+  # Public Route
+  PublicDefaultRoute:
+    Type: AWS::EC2::Route
+
+    DependsOn:
+      - InternetGatewayAttachment
+
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  # Public Subnet Route Table Association
+  PublicRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet
+      RouteTableId: !Ref PublicRouteTable
+
+  # IAM Role for Terraform Bastion
+  TerraformBastionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub
+        - ${Project}-${Env}-${RegionName}-terraform-bastion-role
+        - RegionName: !FindInMap
+            - RegionMap
+            - !Ref AWS::Region
+            - RegionName
+
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+
+      Policies:
+        - PolicyName: !Sub 
+            - "${Project}-${Env}-${RegionName}-terraform-bastion-policy"
+            - RegionName: !FindInMap
+                - RegionMap
+                - !Ref AWS::Region
+                - RegionName
+
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              # Bucket 접근 권한
+              - Sid: AllowListBucket
+                Effect: Allow
+                Action:
+                  - s3:ListBucket
+                Resource:
+                  - !Sub 
+                      - "arn:aws:s3:::${S3Bucket}"
+                      - S3Bucket: !FindInMap
+                          - EnvMap
+                          - !Ref Env
+                          - S3Bucket
+              # Object 다운로드/업로드 권한
+              - Sid: AllowGetPutObject
+                Effect: Allow 
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource:
+                  - !Sub 
+                      - "arn:aws:s3:::${S3Bucket}/*"
+                      - S3Bucket: !FindInMap
+                          - EnvMap
+                          - !Ref Env
+                          - S3Bucket
+              # Tag 권한
+              - Sid: AllowTags
+                Effect: Allow 
+                Action:
+                  - ec2:DescribeTags  # EC2 Tag 조회 권한
+                  # - ec2:CreateTags    # EC2 Tag 생성 권한
+                Resource: "*"
+
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - ${Project}-${Env}-${RegionName}-terraform-bastion-role
+            - RegionName: !FindInMap
+                - RegionMap
+                - !Ref AWS::Region
+                - RegionName
+
+        - Key: ENV
+          Value: !Ref Env
+
+        - Key: ManagedBy
+          Value: CloudFormation
+
+  # Instance Profile
+  TerraformBastionInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref TerraformBastionRole
+
+  # Security Group
+  TerraformBastionSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub
+        - ${Project}-${Env}-${RegionName}-terraform-bastion-sg
+        - RegionName: !FindInMap
+            - RegionMap
+            - !Ref AWS::Region
+            - RegionName
+      GroupDescription: For Terraform Bastion Security Group
+      VpcId: !Ref TerraformVpc
+
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 4222
+          ToPort: 4222
+          CidrIp: !Sub "${AllowedSshIp}/32"
+          Description: Allow SSH access from SBC(Internet) IP
+
+      SecurityGroupEgress: # [] ㅡ Egress 미설정시
+        - IpProtocol: "-1"
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic
+
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - ${Project}-${Env}-${RegionName}-terraform-bastion-sg
+            - RegionName: !FindInMap
+                - RegionMap
+                - !Ref AWS::Region
+                - RegionName
+
+        - Key: ENV
+          Value: !Ref Env
+
+        - Key: ManagedBy
+          Value: CloudFormation
+
+  # Elastic IP for Terraform Bastion
+  TerraformBastionEIP:
+    Type: AWS::EC2::EIP
+    DependsOn:
+      - InternetGatewayAttachment
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - ${Project}-${Env}-${RegionName}-terraform-bastion-eip
+            - RegionName: !FindInMap
+                - RegionMap
+                - !Ref AWS::Region
+                - RegionName
+
+        - Key: ENV
+          Value: !Ref Env
+
+        - Key: ManagedBy
+          Value: CloudFormation
+
+  # Terraform Bastion EC2
+  TerraformBastion:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !FindInMap
+        - RegionMap
+        - !Ref AWS::Region
+        - AMI
+      InstanceType: !Ref InstanceType
+      IamInstanceProfile: !Ref TerraformBastionInstanceProfile
+      KeyName: !Sub
+        - ${Env}-${Project}-${RegionCode}-key
+        - RegionCode: !FindInMap
+            - RegionMap
+            - !Ref AWS::Region
+            - RegionCode
+
+      SubnetId: !Ref PublicSubnet
+
+      SecurityGroupIds:
+        - !Ref TerraformBastionSecurityGroup
+
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeType: gp3
+            VolumeSize: 30
+            Encrypted: true
+            DeleteOnTermination: true
+
+      MetadataOptions:
+        HttpEndpoint: enabled
+        HttpTokens: required
+        HttpPutResponseHopLimit: 1
+
+      UserData:
+        Fn::Base64:
+          !Sub 
+            - |
+              #!/bin/bash
+              dnf update -y && dnf install -y git unzip wget jq
+
+              TOKEN=$(curl -sS -X PUT \
+                -H "X-aws-ec2-metadata-token-ttl-seconds: 21600" \
+                http://169.254.169.254/latest/api/token)
+
+              INSTANCE_ID=$(curl -sS \
+                -H "X-aws-ec2-metadata-token: $TOKEN" \
+                http://169.254.169.254/latest/meta-data/instance-id)
+
+              REGION=$(curl -sS \
+                -H "X-aws-ec2-metadata-token: $TOKEN" \
+                http://169.254.169.254/latest/meta-data/placement/region)
+
+              INSTANCE_NAME=$(aws ec2 describe-tags \
+                --region "$REGION" \
+                --filters \
+                  "Name=resource-id,Values=$INSTANCE_ID" \
+                  "Name=key,Values=Name" \
+                --query "Tags[0].Value" \
+                --output text)
+              
+              echo "export PS1='\u@${INSTANCE_NAME}:[\w] '" >> /etc/profile
+              
+              host_ip=$(hostname -I)
+              hostnamectl set-hostname $host_ip
+
+              sed -i 's/#Port 22/Port 4222/' /etc/ssh/sshd_config
+              systemctl restart sshd
+
+              mkdir -p /opt/ipa-client && cd /opt/ipa-client
+
+              aws s3 cp s3://${S3Bucket}/${IPAClientObject} .
+              tar -xzf ${IPAClientObject}
+              rm -f ${IPAClientObject}
+              . ./setup-ipa-client.sh aws "${Account}" "${IPAEnrollKey}"
+
+              cd /opt/; wget "https://releases.hashicorp.com/terraform/${TerraformVersion}/terraform_${TerraformVersion}_linux_arm64.zip"
+
+              unzip -qo terraform*.zip -d /usr/local/bin
+              chmod +x /usr/local/bin/terraform
+              rm -f terraform*.zip
+
+              userdel -r ec2-user
+
+            - RegionName: !FindMap
+                - RegionMap
+                - !Ref AWS::Region
+                - RegionCode
+              Account: !FindInMap
+                - EnvMap
+                - !Ref Env
+                - Account
+              S3Bucket: !FindInMap
+                - EnvMap
+                - !Ref Env
+                - S3Bucket
+                
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - ${Project}-${Env}-${RegionName}-terraform-bastion
+            - RegionName: !FindInMap
+                - RegionMap
+                - !Ref AWS::Region
+                - RegionName
+
+        - Key: IPA_TAGS
+          Value: !Sub
+            - "${Project}-${Env}-${RegionName}-terraform-bastion, app-account:${User}.${Account}"
+            - RegionName: !FindInMap
+                - RegionMap
+                - !Ref AWS::Region
+                - RegionName
+              Account: !FindInMap
+                - EnvMap
+                - !Ref Env
+                - Account
+
+        - Key: ENV
+          Value: !Ref Env
+
+        - Key: GBL_CLASS_0
+          Value: OPERATION
+
+        - Key: GBL_CLASS_1
+          Value: BASTION
+
+        - Key: ManagedBy
+          Value: CloudFormation
+
+  TerraformBastionEIPAssociation:
+    Type: AWS::EC2::EIPAssociation
+    DependsOn:
+      - TerraformBastion
+      - TerraformBastionEIP
+    Properties:
+      AllocationId: !GetAtt TerraformBastionEIP.AllocationId
+      InstanceId: !Ref TerraformBastion

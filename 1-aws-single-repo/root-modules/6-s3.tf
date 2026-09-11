@@ -1,80 +1,51 @@
-######################################
-# S3 Configuration
-######################################
 locals {
-  ## ${path.module} : 현재 Terraform 코드가 속한 Module의 디렉터리 경로
-
-  # 모든 환경에서 공통으로 생성할 s3/common 디렉터리 하위의 YAML 파일 조회
-  s3_common_files = fileset(
-    "${path.module}/s3/common",
-    "*.yaml"
+  s3_common = csvdecode(
+    file("${path.module}/s3/common/buckets.csv")
   )
 
-  # 각 yaml 파일을 읽어 terraform object로 변환
-  s3_common_buckets = {
-    for filename in local.s3_common_files :
+  s3_environment = fileexists("${path.module}/s3/environments/${var.environment}-${local.region_prefix}.csv") ? csvdecode(
+    file("${path.module}/s3/environments/${var.environment}-${local.region_prefix}.csv")
+  ) : []
 
-    trimsuffix(filename, ".yaml") => yamldecode(    # 접미사 제거 후 파일명이 bucket의 논리적 이름으로 사용
-      file("${path.module}/s3/common/${filename}")
-    )
+  s3_buckets = concat(
+    local.s3_common,
+    local.s3_environment
+  )
+
+  s3_bucket_map = {
+    for bucket in local.s3_buckets :
+    bucket.name => bucket
   }
 
-  # 특정 환경(dev/stg/prd)에서 생성할 s3/common 디렉터리 하위의 YAML 조회
-  s3_environments_files = fileset(
-    "${path.module}/s3/environments/${var.environment}",
-    "*.yaml"
-  )
-
-  s3_environments_buckets = {
-    for filename in local.s3_environments_files :
-
-    trimsuffix(filename, ".yaml") => yamldecode(
-      file("${path.module}/s3/environments/${var.var.environment}/${filename}")
-    )
+  s3_bucket_names = {
+    for key, bucket in local.s3_bucket_map :
+    key => "${var.project}-${var.environment}-${local.region_name}-${key}"
   }
-
-  # 공통 Bucket + 현재 환경 전용 Bucket 병합
-  s3_buckets = merge(
-    # 뒤에서 앞에거를 덮어쓰기 해서, 뒤에 적는 것이 우선순위가 더 높다.
-    local.s3_common_buckets,
-    local.s3_environments_buckets
-  )
 }
 
-######################################
-# S3 Buckets
-######################################
 module "s3" {
+  for_each = local.s3_bucket_map
+
   source = "../child-modules/terraform-aws-s3"
 
-  for_each        = local.s3_config.buckets
-  bucket_name     = "${var.project}-${var.environment}-${local.region_name}-${each.key}"  
+  bucket_name = local.s3_bucket_names[each.key]
 
-  versioning_enabled  = each.value.versioning
-  encryption_type     = each.value.encryption
-  object_ownership    = each.value.object_ownership
+  s3_info = {
+    policy = templatefile(
+      "${path.module}/s3/common/policies/${each.value.policy_file}",
+      {
+        bucket_arn     = "arn:aws:s3:::${local.s3_bucket_names[each.key]}"
+        aws_account_id = data.aws_caller_identity.current.account_id
+        aws_region     = var.aws_region
+      }
+    )
 
-  block_public_acls = (
-    each.value.public_access_block.block_public_acls
-  )
-
-  ignore_public_acls = (
-    each.value.public_access_block.ignore_public_acls
-  )
-
-  block_public_policy = (
-    each.value.public_access_block.block_public_policy
-  )
-
-  restrict_public_buckets = (
-    each.value.public_access_block.restrict_public_buckets
-  )
-
-  tags = merge(
-    local.common_tags,
-    {
-      Name        = "${var.project}-${var.environment}-${local.region_name}-${each.key}"
-      Application = each.value.application
-    }
-  )
+    tags = merge(
+      local.common_tags,
+      {
+        Name    = local.s3_bucket_names[each.key]
+        Purpose = each.value.purpose
+      }
+    )
+  }
 }

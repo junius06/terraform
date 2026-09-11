@@ -64,6 +64,10 @@ variable "enable_vpc_flow_log" {
   type = bool
 }
 
+variable "vpc_flow_log_destination_arn" {
+  type = string
+}
+
 
 ###################################### 
 # VPC Endpoint

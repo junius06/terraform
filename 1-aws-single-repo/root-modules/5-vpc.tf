@@ -39,9 +39,10 @@ module "svc_vpc" {
   vpc_name = "${var.project}-${var.environment}-${local.region_name}-svc-vpc"
   vpc_cidr = var.svc_vpc_cidr
 
-  aws_region  = var.aws_region
-  region_name = local.region_name
-  region_code = local.region_code
+  aws_region    = var.aws_region
+  region_name   = local.region_name
+  region_code   = local.region_code
+  region_prefix = local.region_prefix
 
   enable_dns_support   = true
   enable_dns_hostnames = true
@@ -62,9 +63,8 @@ module "svc_vpc" {
   #---------------------------#
   private_subnet_groups = var.svc_private_subnet_groups
 
-  enable_vpc_flow_log  = true
-  vpc_flow_log_destination_arn = module.svc_vpc_flow_log_bucket.bucket_arn
-  vpc_flow_log_s3_name = "${var.project}-${var.environment}-${local.region_name}-svc-vpc-flow-log"
+  enable_vpc_flow_log          = true
+  vpc_flow_log_destination_arn = module.s3["svc-vpc-flow-log"].bucket_arn
 
   create_internet_gateway  = true
   create_nat_gateway       = true

@@ -85,7 +85,7 @@ variable "enable_vpc_flow_log" {
   default = true
 }
 
-variable "vpc_flow_log_s3_name" {
+variable "vpc_flow_log_destination_arn" {
   type        = string
   description = "S3 Bucket ARN for VPC Flow Logs from S3 Module Output"
 }
