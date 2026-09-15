@@ -447,7 +447,7 @@ Resources:
                 --query "Tags[0].Value" \
                 --output text)
               
-              echo "export PS1='\u@${INSTANCE_NAME}:[\w] '" >> /etc/profile
+              echo "export PS1='\u@"$INSTANCE_NAME":[\w] '" >> /etc/profile
               
               host_ip=$(hostname -I)
               hostnamectl set-hostname $host_ip
@@ -470,11 +470,7 @@ Resources:
 
               userdel -r ec2-user
 
-            - RegionName: !FindMap
-                - RegionMap
-                - !Ref AWS::Region
-                - RegionCode
-              Account: !FindInMap
+            - Account: !FindInMap
                 - EnvMap
                 - !Ref Env
                 - Account
