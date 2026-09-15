@@ -13,7 +13,7 @@ locals {
 
   private_subnets = merge([
     for subnet_name, group in var.private_subnet_groups : {
-      for subnet_zone, cidr in group.cidrs :
+      for subnet_zone, subnet_cidr in group.cidrs :
 
       "${subnet_name}-${subnet_zone}" => {
         subnet_name = subnet_name
