@@ -34,20 +34,20 @@ variable "vpc_cidr" {
 }
 
 
-variable "private_subnet_groups" {
-  description = "Map of private subnets"
-
-  type = map(object({
-    cidrs            = map(string)
-    enable_nat_route = optional(bool, false)
-  }))
-}
-
 variable "public_subnet_groups" {
   description = "Map of public subnets"
 
   type = map(object({
     cidrs = map(string)
+  }))
+}
+
+variable "private_subnet_groups" {
+  description = "Map of private subnets"
+
+  type = map(object({
+    cidrs      = map(string)
+    enable_nat = optional(bool, false)
   }))
 }
 
