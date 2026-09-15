@@ -15,6 +15,10 @@ variable "common_tags" {
   default = {}
 }
 
+variable "region" {
+  type = string
+}
+
 
 variable "vpc_name" {
   description = "VPC name"

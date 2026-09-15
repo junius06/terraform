@@ -6,7 +6,8 @@ module "vpc" {
 
   for_each = var.vpcs
 
-  context       = local.context
+  context = local.context
+  region  = var.region
 
   vpc_name = each.key
   vpc_cidr = each.value.cidr
