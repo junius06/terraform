@@ -62,7 +62,7 @@ vpcs = {
           a = "10.5.4.0/24"     # 10.5.4.1 ~ 10.5.4.255 (255)
           b = "10.5.5.0/24"     # 10.5.5.1 ~ 10.5.5.255 (255)
         }
-        enable_nat = true # outbound on/off 핸들링
+        enable_nat = false # outbound on/off 핸들링
       }
 
       obs = {

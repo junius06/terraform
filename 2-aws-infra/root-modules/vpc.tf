@@ -13,7 +13,7 @@ module "vpc" {
 
   public_subnet_groups     = each.value.public_subnet_groups
   private_subnet_groups    = each.value.private_subnet_groups
-  nat_gateway_subnet_group = each.value.nat_gateway_subnet_group # NGW가 배치될 서브넷 지정
+  # nat_gateway_subnet_group = each.value.nat_gateway_subnet_group # NGW가 배치될 서브넷 지정
 
   enable_dns_support   = true
   enable_dns_hostnames = true
