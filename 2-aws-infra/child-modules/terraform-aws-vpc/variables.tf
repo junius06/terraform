@@ -5,6 +5,7 @@ variable "context" {
     project     = string
     environment = string
     region_name = string
+    region      = string
   })
 }
 
@@ -13,10 +14,6 @@ variable "common_tags" {
 
   type    = map(string)
   default = {}
-}
-
-variable "region" {
-  type = string
 }
 
 

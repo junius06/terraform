@@ -20,6 +20,7 @@ locals {
   context = {
     project = var.project
     environment = var.environment
+    region      = var.region
     region_name = local.region_name
   }
 
