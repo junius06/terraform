@@ -32,7 +32,7 @@ resource "aws_subnet" "public" {
   cidr_block        = each.value.cidr
   availability_zone = "${var.context.region}${each.value.zone}"
 
-  map_public_ip_on_launch = true
+  map_public_ip_on_launch = false
 
   tags = merge(
     var.common_tags,
