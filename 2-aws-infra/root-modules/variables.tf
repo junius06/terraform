@@ -45,11 +45,11 @@ variable "vpcs" {
     nat_gateway_subnet_group = optional(string)
 
     public_subnet_groups = optional(map(object({
-      cidr = map(string)
+      cidrs = map(string)
     })), {})
     
     private_subnet_groups = optional(map(object({
-      cidr = map(string)
+      cidrs = map(string)
       enable_nat = optional(bool, false)
     })), {})
   }))
