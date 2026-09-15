@@ -318,6 +318,12 @@ Resources:
   TerraformBastionInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
+      InstanceProfileName: !Sub
+        - ${Project}-${Env}-${RegionName}-terraform-bastion-Profile
+        - RegionName: !FindInMap
+            - RegionMap
+            - !Ref AWS::Region
+            - RegionName
       Roles:
         - !Ref TerraformBastionRole
 
