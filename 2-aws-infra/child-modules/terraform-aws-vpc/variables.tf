@@ -36,27 +36,23 @@ variable "vpc_cidr" {
 variable "private_subnet_groups" {
   description = "Map of private subnets"
 
-  type = list(object({
+  type = map(object({
     cidrs            = map(string)
     enable_nat_route = optional(bool, false)
   }))
-
-  default = {}
 }
 
 variable "public_subnet_groups" {
   description = "Map of public subnets"
 
-  type = list(object({
+  type = map(object({
     cidrs = map(string)
   }))
-
-  default = {}
 }
 
 variable "nat_gateway_subnet_group" {
   description = "Public Subnets for NAT placement"
-  type        = list(string)
+  type        = map(string)
   default     = null
 }
 
