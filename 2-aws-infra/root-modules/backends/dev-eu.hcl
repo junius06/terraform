@@ -3,4 +3,4 @@ region       = "us-west-2" # bucket이 존재하는 region으로 설정
 
 key          = "dev-eu-terraform.tfstate"
 encrypt      = true
-use_lockfile = true
+use_lockfile = false # 실제 배포시 true로 변경
