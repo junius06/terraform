@@ -13,7 +13,7 @@ vpcs = {
   main = {
     cidr = "10.5.0.0/20"
 
-    nat_gateway_subnet_group = "ext"
+    nat_gateway_subnet_group = "ext" # 아래 public_subnet_groups 에서 nat를 배치할 subnet_name 지정
 
     # Public Subnet of Main VPC
     public_subnet_groups = {
@@ -42,11 +42,20 @@ vpcs = {
     # Private Subnet of Main VPC
     ## NAT를 통해 Outbound통신이 필요할 경우, enable_nat = true 설정
     private_subnet_groups = {
+      elb = {
+        cidrs = {
+          a = "10.5.1.0/25"
+          b = "10.5.1.128/25"
+        }
+        enable_nat = false
+      }
+      
       cluster = {
         cidrs = {
           a = "10.5.1.0/25"     # 10.5.1.1 ~ 10.5.1.127   (63)
           b = "10.5.1.128/25"   # 10.5.1.129 ~ 10.5.1.255 (63)
         }
+        enable_nat = false
       }
 
       fmm = {

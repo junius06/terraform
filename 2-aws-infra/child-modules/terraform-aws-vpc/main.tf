@@ -37,7 +37,7 @@ resource "aws_subnet" "public" {
   tags = merge(
     var.common_tags,
     {
-        Name = "${var.context.project}-${var.context.environment}-${var.context.region_name}-${each.value.subnet_name}-pub-${each.value.zone}"
+      Name = "${var.context.project}-${var.context.environment}-${var.context.region_name}-${each.value.subnet_name}-pub-${each.value.zone}"
     }
   )
 }
@@ -57,7 +57,39 @@ resource "aws_subnet" "private" {
   tags = merge(
     var.common_tags,
     {
-        Name = "${var.context.project}-${var.context.environment}-${var.context.region_name}-${each.value.subnet_name}-pri-${each.value.zone}"
+      Name = "${var.context.project}-${var.context.environment}-${var.context.region_name}-${each.value.subnet_name}-pri-${each.value.zone}"
+    }
+  )
+}
+
+###################################### 
+# INTERNET GATEWAY
+######################################
+resource "aws_internet_gateway" "igw" {
+  count = length(local.public_subnets) > 0 ? 1 : 0 # public_subnet이 1개 이상일 경우 igw생성
+
+  vpc_id = aws_vpc.this.id
+
+  tags = merge(
+    var.common_tags,
+    {
+      Name = "${var.context.project}-${var.context.environment}-${var.context.region_name}-${var.vpc_name}-igw"
+    }
+  )
+}
+
+###################################### 
+# EIP For NAT GATEWAY
+######################################
+resource "aws_eip" "nat_eip" {
+  for_each = local.nat_subnets
+
+  domain = "vpc"
+
+  tags = merge(
+    var.common_tags,
+    {
+      Name = "${var.context.project}-${var.context.environment}-${var.context.region_name}-${var.vpc_name}-nat-eip-${each.value.zone}"
     }
   )
 }
@@ -65,17 +97,19 @@ resource "aws_subnet" "private" {
 ###################################### 
 # NAT GATEWAY
 ######################################
+resource "aws_nat_gateway" "nat" {
+  for_each = local.nat_subnets
 
+  allocation_id = aws_eip.nat_eip[each.key].id
+  subnet_id     = aws_subnet.public[each.key].id
 
-###################################### 
-# EIP For NAT
-######################################
-
-
-###################################### 
-# INTERNET GATEWAY
-######################################
-
+  tags = merge(
+    var.common_tags,
+    {
+      Name = "${var.context.project}-${var.context.environment}-${var.context.region_name}-${var.vpc_name}-nat-${each.value.zone}"
+    }
+  )
+}
 
 ###################################### 
 # ROUTE TABLE
