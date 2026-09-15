@@ -15,6 +15,8 @@ vpcs = {
 
     nat_gateway_subnet_group = "ext" # 아래 public_subnet_groups 에서 nat를 배치할 subnet_name 지정
 
+    enable_additional_routes = false # 자동 생성되는 기본 route table 외, 추가적인 라우팅 정의된 파일
+
     # Public Subnet of Main VPC
     public_subnet_groups = {
       gw = {
@@ -49,7 +51,7 @@ vpcs = {
         }
         enable_nat = false
       }
-      
+
       cluster = {
         cidrs = {
           a = "10.5.1.0/25"     # 10.5.1.1 ~ 10.5.1.127   (63)
@@ -92,6 +94,13 @@ vpcs = {
     }
   }
 }
+
+###################################### 
+# ROUTE TABLE
+######################################
+
+
+
 
 ###################################### 
 # S3 Buckets

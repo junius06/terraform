@@ -24,6 +24,11 @@ locals {
     region_name = local.region_name
   }
 
+  additional_routes = anytrue([
+    for vpc in values(var.vpcs) : # enable_additional_routes=false일 경우 안 읽고, true일 경우 csv파일을 decode > read 
+    vpc.enable_additional_routes
+  ]) ? csvdecode(file("${path.module}/rt/route_table.csv")) : []
+
 #   # ECR
 #   ecr_repository_arns = [
 #     for repository_name in var.ecr_repositories :

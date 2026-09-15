@@ -70,6 +70,18 @@ variable "enable_dns_support" {
   default   = true
 }
 
+variable "additional_routes" {
+  description = "Additional route configurations passed from root module"
+
+  # csv파일에 정의된 컬럼
+  type = list(object({
+    vpc            = string
+    route_table    = string
+    dst_cidr_block = string
+    target_type    = string
+    target         = string
+  }))
+}
 
 # variable "vpc_flow_log_s3_name" {
 #   description = "VPC FLOW Log S3 Bucket Name"
