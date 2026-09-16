@@ -53,6 +53,9 @@ variable "vpcs" {
       enable_nat = optional(bool, false)
     }))
 
+    # Internet Gateway
+    create_internet_gateway = optional(bool, true)
+
     # NAT Gateway
     nat_gateway_subnets = optional(set(string), [])
 

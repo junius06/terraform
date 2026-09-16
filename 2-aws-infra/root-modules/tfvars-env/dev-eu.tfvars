@@ -13,7 +13,7 @@ vpcs = {
   main = {
     cidr = "10.5.0.0/20"
 
-    create_internet_gateway  = optional(bool, true) # IGW 생성 여부
+    create_internet_gateway  = true # IGW 생성 여부
     enable_additional_routes = false # route_table.csv 적용 여부
 
     nat_gateway_subnets = [ # nat gateway 배치할 subnet_name 지정
@@ -39,7 +39,7 @@ vpcs = {
       elb = {
         cidrs = {
           a = "10.5.0.128/26"   # 10.5.0.129 ~ 10.5.0.191 (63)
-          b = "10.5.0.192/27"   # 10.5.0.193 ~ 10.5.0.255 (63)
+          b = "10.5.0.192/26"   # 10.5.0.193 ~ 10.5.0.255 (63)
         }
       }
     }
@@ -97,14 +97,6 @@ vpcs = {
     }
   }
 }
-
-###################################### 
-# ROUTE TABLE
-######################################
-
-
-
-
 ###################################### 
 # S3 Buckets
 ######################################
