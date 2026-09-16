@@ -24,6 +24,7 @@ locals {
     region_name = local.region_name
   }
 
+  # 하나 이상의 VPC가 Additional Route 사용하면 CSV 로드
   additional_routes = anytrue([
     for vpc in values(var.vpcs) : # enable_additional_routes=false일 경우 안 읽고, true일 경우 csv파일을 decode > read 
     vpc.enable_additional_routes

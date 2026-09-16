@@ -42,21 +42,21 @@ variable "vpcs" {
   type = map(object({
     cidr = string
 
-    # NAT Gateway
-    nat_gateway_subnet_group = optional(string)
-
-    # Route Table (Add)
-    enable_additional_routes = optional(bool, false)
-
     # Public Subnet
-    public_subnet_groups = map(object({
+    public_subnets = map(object({
       cidrs = map(string)
     }))
     
     # Private Subnet
-    private_subnet_groups = map(object({
-      cidrs = map(string)
+    private_subnets = map(object({
+      cidrs      = map(string)
       enable_nat = optional(bool, false)
     }))
+
+    # NAT Gateway
+    nat_gateway_subnets = optional(set(string), [])
+
+    # route_table.csv의 추가 Route 사용 여부
+    enable_additional_routes = optional(bool, false)
   }))
 }
