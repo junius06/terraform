@@ -9,6 +9,8 @@ module "route_table" {
   public_subnets  = module.vpc[each.key].public_subnet_id
   private_subnets = module.vpc[each.key].private_subnet_id
 
+  create_internet_gateway = each.value.create_internet_gateway
+
   igw_id       = module.vpc[each.key].igw_id
   nat_gateways = module.vpc[each.key].nat_id
 

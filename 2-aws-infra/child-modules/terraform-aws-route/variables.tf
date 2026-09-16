@@ -53,6 +53,13 @@ variable "private_subnets" {
   }))
 }
 
+# IGW 생성 여부 확인 (true/false)
+variable "create_internet_gateway" {
+  description = "Whether to create public routes to the Internet Gateway"
+  type        = bool
+  default     = true
+}
+
 # Public 0.0.0.0/0 → IGW
 variable "igw_id" {
   description = "Internet Gateeway ID"

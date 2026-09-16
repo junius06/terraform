@@ -1,8 +1,10 @@
 ###################################### 
 # ROUTE TABLE
 ######################################
+# Public Subnet은 AZ당 하나의 Route Table을 생성하지 않고 한 Group(a/b)당 하나의 Route Table을 생성한다.
 resource "aws_route_table" "public" {
-  for_each = local.public_route_table_groups
+  # ROOT VPC 에서 IGW 생성 여부가 true일 때에만 Public RT 생성
+  for_each = var.create_internet_gateway ? local.public_route_table_groups : toset([])
 
   vpc_id = var.vpc_id
 
@@ -14,6 +16,7 @@ resource "aws_route_table" "public" {
   )
 }
 
+# Private Subnet은 AZ당 하나의 Route Table을 생성한다.
 resource "aws_route_table" "private" {
   for_each = var.private_subnets
 
@@ -26,11 +29,7 @@ resource "aws_route_table" "private" {
     }
   )
 }
-# [부연 설명]
-# Public은 locals.tf에서 변수 가져오고, private은 variables.tf에서 변수를 가져온 이유:
-# Private Subnet은 AZ당 하나의 Route Table을 생성한다. (기본값)
-# Public Subnet은 AZ당 하나의 Route Table을 생성하지 않고 한 Group(a/b)당 하나의 Route Table을 생성한다.
-# Public Subnet에 대한 Route Table 설정 작업을 locals.tf 파일에서 진행하여 local의 변수를 사용한다.
+
 
 
 ###################################### 
@@ -39,7 +38,7 @@ resource "aws_route_table" "private" {
 # Route Table 생성시 기본 라우팅: VPC → local 이므로 이에 대해선 별도로 설정할 필요가 없다.
 # PUBLIC ROUTE → IGW
 resource "aws_route" "public_igw" {
-  for_each = var.igw_id != null ? aws_route_table.public : {}
+  for_each = aws_route_table.public
 
   route_table_id         = each.value.id
   destination_cidr_block = "0.0.0.0/0"
@@ -77,7 +76,7 @@ resource "aws_route" "private_nat" {
 ######################################
 # PUBLIC
 resource "aws_route_table_association" "public" {
-  for_each = var.public_subnets
+  for_each = var.create_internet_gateway ? var.public_subnets : {}
 
   subnet_id      = each.value.id
   route_table_id = aws_route_table.public[each.value.subnet_name].id
