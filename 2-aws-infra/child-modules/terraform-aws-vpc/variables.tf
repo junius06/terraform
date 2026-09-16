@@ -53,7 +53,7 @@ variable "private_subnets" {
 
 variable "nat_gateway_subnets" {
   description = "Public Subnets for NAT placement"
-  type        = map(string)
+  type        = set(string)
 
   # tfvars에서 nat_gateway_subnets에 지정한 이름이 실제 public_subnets에 존재하는지 검증
   validation {
