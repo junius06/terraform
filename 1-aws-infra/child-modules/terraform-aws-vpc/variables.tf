@@ -38,7 +38,7 @@ variable "enable_dns_hostnames" {
 ######################################
 # Public Subnet Groups
 ######################################
-variable "public_subnet_groups" {
+variable "public_subnets" {
   type = map(object({
     cidrs = map(string)
   }))
@@ -47,7 +47,7 @@ variable "public_subnet_groups" {
 ######################################
 # Private Subnet Groups
 ######################################
-variable "private_subnet_groups" {
+variable "private_subnets" {
   type = map(object({
     cidrs = map(string)
 
@@ -72,7 +72,7 @@ variable "create_nat_gateway" {
   default = false
 }
 
-variable "nat_gateway_subnet_group" {
+variable "nat_gateway_subnets" {
   type        = string
   description = "Public Subnet Group in which NAT Gateways are created."
 }

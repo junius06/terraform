@@ -14,7 +14,7 @@ main_vpc_cidr = "10.100.0.0/19"
 # Reserved  : 10.100.6.0/24 ~ 10.100.9.0/24
 # Private   : 10.100.10.0/24 ~ 10.100.17.0/24
 # Reserved  : 10.100.18.0/24 ~ 10.100.31.0/24
-main_public_subnet_groups = {
+main_public_subnets = {
   mgmt = {
     cidrs = {
       a = "10.100.0.0/24"
@@ -37,7 +37,7 @@ main_public_subnet_groups = {
   }
 }
 
-main_private_subnet_groups = {
+main_private_subnets = {
   cluster = {
     cidrs = {
       a = "10.100.10.0/24"

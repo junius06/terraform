@@ -15,7 +15,7 @@ resource "aws_vpc" "vpc" {
 # 서브넷 그룹을 개별 서브넷 단위로 변환 ㅡ 실제 aws_subnet이 반복 생성하기 용이하도록 가공
 locals {
   public_subnets = merge([
-    for group_name, group in var.var.public_subnet_groups : {
+    for group_name, group in var.var.public_subnets : {
       for az, cidr in group.cidrs : 
       "${group_name}-${az}" => {
         group = group_name
@@ -26,7 +26,7 @@ locals {
   ]...)
 
   private_subnets = merge([
-    for group_name, group in var.var.private_subnet_groups : {
+    for group_name, group in var.var.private_subnets : {
       for az, cidr in group.cidrs :
       "${group_name}-${az}" => {
         group = group_name

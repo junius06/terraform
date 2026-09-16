@@ -48,7 +48,7 @@ variable "main_vpc_cidr" {
   }
 }
 
-variable "main_public_subnet_groups" {
+variable "main_public_subnets" {
   type = map(object({
     cidrs = map(string)
   }))
@@ -56,7 +56,7 @@ variable "main_public_subnet_groups" {
   description = "Public subnet groups for MAIN-VPC"
 }
 
-variable "main_private_subnet_groups" {
+variable "main_private_subnets" {
   type = map(object({
     cidrs      = map(string)
     enable_nat = optional(bool, false)

@@ -345,6 +345,11 @@ Resources:
           FromPort: 4222
           ToPort: 4222
           CidrIp: !Sub "${AllowedSshIp}/32"
+          Description: Allow SSH access from SKT NAT-IP
+        - IpProtocol: tcp
+          FromPort: 4222
+          ToPort: 4222
+          CidrIp: !Sub "${AllowedSshIp}/32"
           Description: Allow SSH access from SBC(Internet) IP
 
       SecurityGroupEgress: # [] ㅡ Egress 미설정시

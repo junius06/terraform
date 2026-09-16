@@ -1,6 +1,6 @@
 resource "aws_eip" "nat" {
   # root-module/vpc.tf파일에서 `var.create_nat_gateway`값이 true일 때 생성, false일 경우 미생성
-  for_each = var.create_nat_gateway ? var.public_subnet_groups[var.nat_gateway_subnet_group].cidrs : {}
+  for_each = var.create_nat_gateway ? var.public_subnets[var.nat_gateway_subnets].cidrs : {}
 
   domain = "vpc"
 
@@ -13,11 +13,11 @@ resource "aws_eip" "nat" {
 }
 
 resource "aws_nat_gateway" "this" {
-  for_each = var.create_nat_gateway ? var.public_subnet_groups[var.nat_gateway_subnet_group].cidrs : {}
+  for_each = var.create_nat_gateway ? var.public_subnets[var.nat_gateway_subnets].cidrs : {}
 
   # 동일 AZ용 EIP 연결
   allocation_id = aws_eip.nat[each.key].id
-  subnet_id     = aws_subnet.public["${var.nat_gateway_subnet_group}-${each.key}"].id
+  subnet_id     = aws_subnet.public["${var.nat_gateway_subnets}-${each.key}"].id
 
   tags = merge(
     var.tags,

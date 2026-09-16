@@ -53,7 +53,7 @@ module "main_vpc" {
   # ext  : NAT Gateway 배치
   # elb  : Internet-facing ABL
   #---------------------------#
-  public_subnet_groups = var.main_public_subnet_groups
+  public_subnets = var.main_public_subnets
 
   # Private Subnet Groups
   #---------------------------#
@@ -61,14 +61,14 @@ module "main_vpc" {
   # ops  : Operation workloads
   # kpt  : auto scaling workloads
   #---------------------------#
-  private_subnet_groups = var.main_private_subnet_groups
+  private_subnets = var.main_private_subnets
 
   # enable_vpc_flow_log          = true
   # vpc_flow_log_destination_arn = module.s3["main-vpc-flow-log"].bucket_arn
 
   create_internet_gateway  = true
   create_nat_gateway       = true
-  nat_gateway_subnet_group = "ext" # NGW가 배치될 서브넷 지정
+  nat_gateway_subnets = "ext" # NGW가 배치될 서브넷 지정
 
   ## VPC Endpoints
   # create_s3_endpoint      = true
