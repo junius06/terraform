@@ -13,11 +13,12 @@ vpcs = {
   main = {
     cidr = "10.5.0.0/20"
 
-    nat_gateway_subnets = [ # 아래 public_subnets 에서 nat를 배치할 subnet_name 지정
+    create_internet_gateway  = optional(bool, true) # IGW 생성 여부
+    enable_additional_routes = false # route_table.csv 적용 여부
+
+    nat_gateway_subnets = [ # nat gateway 배치할 subnet_name 지정
       "ext"
     ]
-
-    enable_additional_routes = false # 자동 생성되는 기본 route table 외, 추가적인 라우팅 정의된 파일
 
     # Public Subnet of Main VPC
     public_subnets = {
