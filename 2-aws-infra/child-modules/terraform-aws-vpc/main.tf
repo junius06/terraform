@@ -26,7 +26,7 @@ resource "aws_vpc" "this" {
 # PUBLIC SUBNET
 ######################################
 resource "aws_subnet" "public" {
-  for_each = local.public_subnets
+  for_each = local.public_subnet_map
 
   vpc_id            = aws_vpc.this.id
   cidr_block        = each.value.cidr
@@ -46,7 +46,7 @@ resource "aws_subnet" "public" {
 # PRIVATE SUBNET
 ######################################
 resource "aws_subnet" "private" {
-  for_each = local.private_subnets
+  for_each = local.private_subnet_map
 
   vpc_id            = aws_vpc.this.id
   cidr_block        = each.value.cidr
@@ -66,7 +66,7 @@ resource "aws_subnet" "private" {
 # INTERNET GATEWAY
 ######################################
 resource "aws_internet_gateway" "igw" {
-  count = length(local.public_subnets) > 0 ? 1 : 0 # public_subnet이 1개 이상일 경우 igw생성
+  count = length(local.public_subnet_map) > 0 ? 1 : 0 # public_subnet이 1개 이상일 경우 igw생성
 
   vpc_id = aws_vpc.this.id
 
@@ -82,7 +82,7 @@ resource "aws_internet_gateway" "igw" {
 # EIP For NAT GATEWAY
 ######################################
 resource "aws_eip" "nat_eip" {
-  for_each = local.nat_subnets
+  for_each = local.nat_subnet_map
 
   domain = "vpc"
 
@@ -98,7 +98,7 @@ resource "aws_eip" "nat_eip" {
 # NAT GATEWAY
 ######################################
 resource "aws_nat_gateway" "nat" {
-  for_each = local.nat_subnets
+  for_each = local.nat_subnet_map
 
   allocation_id = aws_eip.nat_eip[each.key].id
   subnet_id     = aws_subnet.public[each.key].id
@@ -109,8 +109,7 @@ resource "aws_nat_gateway" "nat" {
       Name = "${var.context.project}-${var.context.environment}-${var.context.region_name}-${var.vpc_name}-nat-${each.value.zone}"
     }
   )
-}
 
-###################################### 
-# ROUTE TABLE
-######################################
+  # IGW dependency 설정 (IGW생성 이후 NAT Gateway생성)
+  depends_on = [ aws_internet_gateway.igw ]
+}
