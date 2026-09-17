@@ -23,15 +23,18 @@ locals {
   }
 }
 
+# Route Table IDs
 locals {
   route_table_ids = merge(
+    # Public Subnet Route Table
     {
       for key, route_table in aws_route_table.public :
-      route_table.tags["Name"] => route_table.id
+      "${key}-pub-rt" => route_table.id
     },
+    # Private Subnet Route Table
     {
       for key, route_table in aws_route_table.private :
-      route_table.tags["Name"] => route_table.id
+      "${var.private_subnets[key].subnet_name}-pri-${var.private_subnets[key].zone}-rt" => route_table.id
     }
   )
 }

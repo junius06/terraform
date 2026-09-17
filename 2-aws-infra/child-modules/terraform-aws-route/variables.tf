@@ -80,6 +80,9 @@ variable "nat_gateways" {
   default = {}
 }
 
+######################################
+# Additional Routes
+######################################
 variable "additional_routes" {
   description = "Additional route configurations"
 
@@ -95,4 +98,13 @@ variable "additional_routes" {
   }))
 
   default = []
+}
+
+######################################
+# VPC Peering
+######################################
+variable "vpc_peering_ids" {
+  description = "Map of logical VPC peering names to VPC Peering Connection IDs"
+  type        = map(string)
+  default     = {}
 }

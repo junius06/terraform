@@ -109,11 +109,16 @@ resource "aws_route" "peering" {
     if route.target_type == "peering"
   }
 
+  # Route Table
   route_table_id = local.route_table_ids[
     each.value.route_table
   ]
 
-  destination_cidr_block = each.value.dst_cidr_block[
+  # Destination CIDR
+  destination_cidr_block = each.value.dst_cidr_block
+
+  # Target VPC Peering Connection
+  vpc_peering_connection_id = var.vpc_peering_ids[
     each.value.target
   ]
 }

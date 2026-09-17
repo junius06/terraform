@@ -25,3 +25,9 @@ output "private_route_tables" {
     }
   }
 }
+
+# ROUTE TABLE IDs
+output "route_table_ids" {
+  description = "Map of logical Route Table names to Route Table IDs"
+  value       = local.route_table_ids
+}
