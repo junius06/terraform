@@ -99,7 +99,7 @@ vpcs = {
       db = {
         enable = true
 
-        accepter_vpc_id      = "vpc-a3cd38c6"
+        accepter_vpc_id      = "vpc-d96c8cbc"
         accepter_region      = null
         # accepter_region = "eu-west-1"
         #                 | "us-west-2"
