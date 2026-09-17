@@ -55,9 +55,10 @@ done
 #####################################
 CHECK_FAILED=0
 
-## 1. AdministratorAccess 제거 확인
+# AdministratorAccess 제거 확인
 echo "Checking AdministratorAccess policy..."
 
+# 여기서 막힘
 ADMIN_POLICY=$(aws iam list-attached-role-policies \
   --role-name "$ROLE_NAME" \
   --query "AttachedPolicies[?PolicyArn=='arn:aws:iam::aws:policy/AdministratorAccess'].PolicyArn" \
@@ -70,7 +71,7 @@ else
   CHECK_FAILED=1
 fi
 
-## 2. Security Group Egress 제거 확인
+# Security Group Egress 제거 확인
 echo "Checking Security Group outbound rules..."
 
 for SG_ID in $SG_IDS; do
@@ -89,7 +90,7 @@ for SG_ID in $SG_IDS; do
 
 done
 
-## 최종 결과
+# 최종 결과
 if [ "$CHECK_FAILED" -eq 0 ]; then
   echo "Cleanup verification completed successfully."
 else

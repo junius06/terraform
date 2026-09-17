@@ -1,3 +1,0 @@
-name,purpose,policy_file,,
-svc-vpc-flow-log,vpc-flow-log,vpc-flow-log.json.tftpl,,
-,,,,

@@ -124,7 +124,9 @@ Mappings:
       S3Bucket: s3-uw2-resource-parser-02
 
 Resources:
+  # ============================================================
   # VPC
+  # ============================================================
   TerraformVpc:
     Type: AWS::EC2::VPC
     Properties:
@@ -554,3 +556,28 @@ Resources:
     Properties:
       AllocationId: !GetAtt TerraformBastionEIP.AllocationId
       InstanceId: !Ref TerraformBastion
+
+  # ============================================================
+  # VPC Flow Logs
+  # ============================================================
+  VpcFlowLog:
+    Type: AWS::EC2::FlowLog
+    Properties:
+      ResourceId: !Ref TerraformVpc
+      ResourceType: VPC
+
+      # ACCEPT / REJECT 모두 수집
+      TrafficType: ALL
+
+      # S3 저장
+      LogDestinationType: s3
+
+      LogDestination: !Sub
+        - "arn:${AWS::Partition}:s3:::${S3Bucket}/terraform-bastion/${Env}-${Region}-vpc-flow-logs/"
+        - S3Bucket: !FindInMap
+            - EnvMap
+            - !Ref Env
+            - S3Bucket
+
+      # 10분 단위 집계
+      MaxAggregationInterval: 600

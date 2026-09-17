@@ -6,7 +6,7 @@ environment     = "dev"
 region          = "eu-west-1"
 
 ###################################### 
-# VPC
+# VPCs
 ######################################
 vpcs = {
   ## MAIN VPC ##
@@ -14,13 +14,15 @@ vpcs = {
     cidr = "10.5.0.0/20"
 
     create_internet_gateway  = true
-    enable_additional_routes = false
+    enable_additional_routes = true
 
     nat_gateway_subnets = [
       "ext"
     ]
 
-    # Public Subnet of Main VPC
+    ######################################
+    # Public Subnets
+    ######################################
     public_subnets = {
       gw = {
         cidrs = {
@@ -44,7 +46,9 @@ vpcs = {
       }
     }
 
-    # Private Subnet of Main VPC
+    ######################################
+    # Private Subnets
+    ######################################
     private_subnets = {
       elb = {
         cidrs = {
@@ -95,6 +99,9 @@ vpcs = {
       }
     }
 
+    ######################################
+    # VPC Peering
+    ######################################
     vpc_peerings = {
       db = {
         enable = true

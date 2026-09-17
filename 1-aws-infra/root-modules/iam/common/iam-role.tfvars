@@ -1,1 +1,0 @@
-iam_role_path = "../../../child-modules/terraform-aws-iam-role"
