@@ -14,6 +14,12 @@ module "route_table" {
   igw_id       = module.vpc[each.key].igw_id
   nat_gateways = module.vpc[each.key].nat_id
 
+  additional_routes = each.value.enable_additional_routes ? [
+    for route in local.additional_routes :
+    route
+    if route.vpc == each.key
+  ] : []
+
   context     = local.context
   common_tags = local.common_tags
 }
