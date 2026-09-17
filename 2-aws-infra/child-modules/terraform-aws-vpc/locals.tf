@@ -32,16 +32,3 @@ locals {
 }
 # root-modules/vpc 에서 받아온 public_subnets, private_subnets, nat_subnets 변수 값들과 혼동되지 않도록,
 # flatten된 local에서는 `_map`를 추가한다.
-
-locals {
-  route_table_ids = merge(
-    {
-      for key, route_table in aws_route_table.public :
-      route_table.tags["Name"] => route_table.id
-    },
-    {
-      for key, route_table in aws_route_table.private :
-      route_table.tags["Name"] => route_table.id
-    }
-  )
-}

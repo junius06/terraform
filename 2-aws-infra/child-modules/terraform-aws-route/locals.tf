@@ -22,3 +22,16 @@ locals {
     ]
   }
 }
+
+locals {
+  route_table_ids = merge(
+    {
+      for key, route_table in aws_route_table.public :
+      route_table.tags["Name"] => route_table.id
+    },
+    {
+      for key, route_table in aws_route_table.private :
+      route_table.tags["Name"] => route_table.id
+    }
+  )
+}

@@ -98,3 +98,22 @@ resource "aws_route_table_association" "private" {
   subnet_id      = each.value.id
   route_table_id = aws_route_table.private[each.key].id
 }
+
+###################################### 
+# Additional Route Resource
+######################################
+resource "aws_route" "peering" {
+  for_each = {
+    for route in var.additional_routes :
+    route.id => route
+    if route.target_type == "peering"
+  }
+
+  route_table_id = local.route_table_ids[
+    each.value.route_table
+  ]
+
+  destination_cidr_block = each.value.dst_cidr_block[
+    each.value.target
+  ]
+}

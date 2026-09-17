@@ -39,9 +39,9 @@ locals {
           requester_vpc_alias = requester_alias
           accepter_vpc_alias = accepter_alias
         }
-      )
+      ) 
+      if peering.enable
     }
-    if peering.enable
   ]...)
 
 #   # ECR

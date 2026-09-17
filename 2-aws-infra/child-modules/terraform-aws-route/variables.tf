@@ -80,18 +80,19 @@ variable "nat_gateways" {
   default = {}
 }
 
-# variable "additional_routes" {
-#   description = "Additional route/association definitions"
+variable "additional_routes" {
+  description = "Additional route configurations"
 
-#   type = list(object({
-#     id             = string
-#     type           = string
-#     vpc            = string
-#     route_table    = string
-#     dst_cidr_block = string
-#     target_type    = string
-#     target         = string
-#     subnet         = string
-#   }))
-#   default = {}
-# }
+  # csv파일에 정의된 컬럼
+  type = list(object({
+    id             = string
+    vpc            = string
+    route_table    = string
+    dst_cidr_block = string
+    target_type    = string
+    target         = string
+    description    = string
+  }))
+
+  default = []
+}

@@ -122,22 +122,3 @@ resource "aws_nat_gateway" "nat" {
   # IGW dependency 설정 (IGW생성 이후 NAT Gateway생성)
   depends_on = [ aws_internet_gateway.igw ]
 }
-
-###################################### 
-# Additional Route Resource
-######################################
-resource "aws_route" "peering" {
-  for_each = {
-    for route in var.additional_routes :
-    route.id => route
-    if route.target_type == "peering"
-  }
-
-  route_table_id = local.route_table_ids[
-    each.value.route_table
-  ]
-
-  destination_cidr_block = each.value.dst_cidr_block[
-    each.value.target
-  ]
-}
