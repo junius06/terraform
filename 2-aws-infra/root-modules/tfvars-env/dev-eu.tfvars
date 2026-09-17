@@ -1,9 +1,9 @@
 ###################################### 
 # 운영을 위한 기본 변수
 ######################################
-project         = "project"
+project         = "fmm"
 environment     = "dev"
-region          = "eu-west-1"   # aws_region 값에 따라 `locals.tf` 내에서 변수 `region_name`, `region_code` 값을 자동으로 매핑한다.
+region          = "eu-west-1"
 
 ###################################### 
 # VPC
@@ -13,10 +13,10 @@ vpcs = {
   main = {
     cidr = "10.5.0.0/20"
 
-    create_internet_gateway  = true # IGW 생성 여부
-    enable_additional_routes = false # route_table.csv 적용 여부
+    create_internet_gateway  = true
+    enable_additional_routes = false
 
-    nat_gateway_subnets = [ # nat gateway 배치할 subnet_name 지정
+    nat_gateway_subnets = [
       "ext"
     ]
 
@@ -45,7 +45,6 @@ vpcs = {
     }
 
     # Private Subnet of Main VPC
-    ## NAT를 통해 Outbound통신이 필요할 경우, enable_nat = true 설정
     private_subnets = {
       elb = {
         cidrs = {
@@ -76,7 +75,7 @@ vpcs = {
           a = "10.5.4.0/24"     # 10.5.4.1 ~ 10.5.4.254 (254)
           b = "10.5.5.0/24"     # 10.5.5.1 ~ 10.5.5.254 (254)
         }
-        enable_nat = false # outbound on/off 핸들링
+        enable_nat = false
       }
 
       obs = {
@@ -95,50 +94,19 @@ vpcs = {
         enable_nat = false
       }
     }
+
+    vpc_peerings = {
+      db = {
+        enable = true
+
+        accepter_vpc_id      = "vpc-a3cd38c6"
+        accepter_region      = null
+        # accepter_region = "eu-west-1"
+        #                 | "us-west-2"
+        #                 | "ap-southeast-1"
+        enable_cross_account = false
+        accepter_account_id  = null
+      }
+    }
   }
 }
-###################################### 
-# S3 Buckets
-######################################
-# s3_buckets = [
-#   "my-app-bucket"
-# ]
-
-# ============================================================
-# ECR Repository
-# ============================================================
-# ecr_repositories = [
-#   "my-app1",
-#   "my-app2"
-# ]
-
-# ============================================================
-# EC2
-# ============================================================
-# bastion_instance_type = "t4g.micro"
-
-# ============================================================
-# EKS
-# ============================================================
-# eks_version = "1.36"
-
-# eks_node_groups = {
-#   svc = {
-#     instance_types = ["m8g.medium"]
-#     desired_size   = 2
-#     min_size       = 2
-#     max_size       = 6
-#   }
-#   ops = {
-#     instance_types = ["m8g.medium"]
-#     desired_size   = 2
-#     min_size       = 2
-#     max_size       = 4
-#   }
-#   kpt = {
-#     instance_types = ["m8g.medium"]
-#     desired_size   = 2
-#     min_size       = 2
-#     max_size       = 4
-#   }
-# }

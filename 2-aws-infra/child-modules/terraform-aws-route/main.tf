@@ -1,3 +1,7 @@
+locals {
+  naming_rule = "${var.context.project}-${var.context.environment}-${var.context.region_name}"
+}
+
 ###################################### 
 # ROUTE TABLE
 ######################################
@@ -10,7 +14,7 @@ resource "aws_route_table" "public" {
   tags = merge(
     var.common_tags,
     {
-      Name = "${var.context.project}-${var.context.environment}-${var.context.region_name}-${each.key}-pub-rt"
+      Name = "${local.naming_rule}-${each.key}-pub-rt"
     }
   )
 }
@@ -23,7 +27,7 @@ resource "aws_route_table" "private" {
   tags = merge(
     var.common_tags,
     {
-      Name = "${var.context.project}-${var.context.environment}-${var.context.region_name}-${each.value.subnet_name}-pri-${each.value.zone}-rt"
+      Name = "${local.naming_rule}-${each.value.subnet_name}-pri-${each.value.zone}-rt"
     }
   )
 }

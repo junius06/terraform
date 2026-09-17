@@ -61,5 +61,16 @@ variable "vpcs" {
 
     # route_table.csv의 추가 Route 사용 여부
     enable_additional_routes = optional(bool, false)
+
+    # VPC Peering
+    vpc_peerings = optional(map(object({
+      enable = optional(bool, false)
+
+      accepter_vpc_id = string
+      accepter_region = optional(string)
+
+      enable_cross_account = optional(bool, false)
+      accepter_account_id  = optional(string)
+    })), {}) # tfvars파일에서 vpcs.{vpc_name}.vpc_peering가 존재하지 않을 경우 값 없음
   }))
 }

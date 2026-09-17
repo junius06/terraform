@@ -11,7 +11,6 @@ variable "context" {
 
 variable "common_tags" {
   description = "Common Tags"
-
   type    = map(string)
   default = {}
 }
@@ -78,18 +77,28 @@ variable "enable_dns_support" {
   default   = true
 }
 
-# variable "enable_additional_routes" {
-#   description = "Additional route configurations passed from root module"
+variable "additional_routes" {
+  description = "Additional route configurations"
 
-#   # csv파일에 정의된 컬럼
-#   type = list(object({
-#     vpc            = string
-#     route_table    = string
-#     dst_cidr_block = string
-#     target_type    = string
-#     target         = string
-#   }))
-# }
+  # csv파일에 정의된 컬럼
+  type = list(object({
+    id             = string
+    vpc            = string
+    route_table    = string
+    dst_cidr_block = string
+    target_type    = string
+    target         = string
+    description    = string
+  }))
+
+  default = []
+}
+
+variable "vpc_peering_ids" {
+  description = "Map of logical VPC peering names to VPC Peering Connection IDs"
+  type        = map(string)
+  default     = {}
+}
 
 # variable "vpc_flow_log_s3_name" {
 #   description = "VPC FLOW Log S3 Bucket Name"

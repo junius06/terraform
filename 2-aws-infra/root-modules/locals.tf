@@ -28,7 +28,21 @@ locals {
   additional_routes = anytrue([
     for vpc in values(var.vpcs) : # enable_additional_routes=false일 경우 안 읽고, true일 경우 csv파일을 decode > read 
     vpc.enable_additional_routes
-  ]) ? csvdecode(file("${path.module}/rt/route_table.csv")) : []
+  ]) ? csvdecode(file("${path.module}/route/route_table.csv")) : []
+
+  vpc_peerings = merge([
+    for requester_alias, vpc in var.vpcs : {
+      for accepter_alias, peering in vpc.vpc_peerings :
+      "${requester_alias}-${accepter_alias}" => merge(
+        peering,
+        {
+          requester_vpc_alias = requester_alias
+          accepter_vpc_alias = accepter_alias
+        }
+      )
+    }
+    if peering.enable
+  ]...)
 
 #   # ECR
 #   ecr_repository_arns = [

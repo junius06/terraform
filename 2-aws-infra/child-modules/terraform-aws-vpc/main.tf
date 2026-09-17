@@ -1,3 +1,7 @@
+locals {
+  naming_rule = "${var.context.project}-${var.context.environment}-${var.context.region_name}"
+}
+
 ###################################### 
 # VPC
 ######################################
@@ -10,7 +14,7 @@ resource "aws_vpc" "this" {
   tags = merge(
     var.common_tags,
     {
-      Name = "${var.context.project}-${var.context.environment}-${var.context.region_name}-${var.vpc_name}-vpc"
+      Name = "${local.naming_rule}-${var.vpc_name}-vpc"
     }
   )
 }
@@ -37,7 +41,7 @@ resource "aws_subnet" "public" {
   tags = merge(
     var.common_tags,
     {
-      Name = "${var.context.project}-${var.context.environment}-${var.context.region_name}-${each.value.subnet_name}-pub-${each.value.zone}"
+      Name = "${local.naming_rule}-${each.value.subnet_name}-pub-${each.value.zone}"
     }
   )
 }
@@ -57,7 +61,7 @@ resource "aws_subnet" "private" {
   tags = merge(
     var.common_tags,
     {
-      Name = "${var.context.project}-${var.context.environment}-${var.context.region_name}-${each.value.subnet_name}-pri-${each.value.zone}"
+      Name = "${local.naming_rule}-${each.value.subnet_name}-pri-${each.value.zone}"
     }
   )
 }
@@ -73,23 +77,28 @@ resource "aws_internet_gateway" "igw" {
   tags = merge(
     var.common_tags,
     {
-      Name = "${var.context.project}-${var.context.environment}-${var.context.region_name}-${var.vpc_name}-igw"
+      Name = "${local.naming_rule}-${var.vpc_name}-igw"
     }
   )
 }
 
 ###################################### 
-# EIP For NAT GATEWAY
+# EIP for NAT GATEWAY
 ######################################
 resource "aws_eip" "nat_eip" {
   for_each = local.nat_subnet_map
 
   domain = "vpc"
 
+  # NAT EIP 삭제 방지
+  lifecycle {
+    prevent_destroy = true
+  }
+
   tags = merge(
     var.common_tags,
     {
-      Name = "${var.context.project}-${var.context.environment}-${var.context.region_name}-${var.vpc_name}-nat-eip-${each.value.zone}"
+      Name = "${local.naming_rule}-${var.vpc_name}-nat-eip-${each.value.zone}"
     }
   )
 }
@@ -106,10 +115,29 @@ resource "aws_nat_gateway" "nat" {
   tags = merge(
     var.common_tags,
     {
-      Name = "${var.context.project}-${var.context.environment}-${var.context.region_name}-${var.vpc_name}-nat-${each.value.zone}"
+      Name = "${local.naming_rule}-${var.vpc_name}-nat-${each.value.zone}"
     }
   )
 
   # IGW dependency 설정 (IGW생성 이후 NAT Gateway생성)
   depends_on = [ aws_internet_gateway.igw ]
+}
+
+###################################### 
+# Additional Route Resource
+######################################
+resource "aws_route" "peering" {
+  for_each = {
+    for route in var.additional_routes :
+    route.id => route
+    if route.target_type == "peering"
+  }
+
+  route_table_id = local.route_table_ids[
+    each.value.route_table
+  ]
+
+  destination_cidr_block = each.value.dst_cidr_block[
+    each.value.target
+  ]
 }

@@ -16,6 +16,12 @@ module "vpc" {
   enable_dns_support   = true
   enable_dns_hostnames = true
 
+  additional_routes = each.value.enable_additional_routes ? [
+    for route in local.additional_routes :
+    route
+    if route.vpc == each.key
+  ] : []
+ 
   # Private/Public Subnet이 생성되면 IGW, NAT 자동 생성되지만,
   # 아래의 변수를 false로 설정하면 생성되지 않도록 설정하는 장치 추가.
   # create_internet_gateway = true
