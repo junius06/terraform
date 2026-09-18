@@ -133,9 +133,6 @@ lifecycle:
         불완전_멀티파트_업로드_삭제:
           enabled: true
           days: 7
-    
-    retention2:
-      enabled: false
 
 
 ######################################
