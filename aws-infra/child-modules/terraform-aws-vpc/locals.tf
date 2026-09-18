@@ -1,4 +1,8 @@
 locals {
+  naming_rule = "${var.context.project}-${var.context.environment}-${var.context.region_name}"
+}
+
+locals {
   public_subnet_map = merge([
     for subnet_name, group in var.public_subnets : {
       for subnet_zone, subnet_cidr in group.cidrs :

@@ -1,0 +1,39 @@
+object_ownership: BucketOwnerEnforced
+
+force_destroy: false
+
+public_access:
+  block_all: true
+
+  block_public_acls: true
+  ignore_public_acls: true
+  block_public_policy: true
+  restrict_public_buckets: true
+
+versioning:
+  enabled: false
+
+encryption:
+  type: AES256
+  kms_key_arn: null
+  bucket_key_enabled: true
+
+lifecycle:
+  enabled: true
+
+  rules:
+    retention:
+      enabled: true
+
+      transitions:
+        - days: 180
+          storage_class: STANDARD_IA
+
+        - days: 270
+          storage_class: GLACIER_IR
+
+      expiration_days: 1095
+
+      abort_incomplete_multipart_upload_days: 7
+
+bucket_policy: vpc-flow-log.json

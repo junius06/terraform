@@ -1,7 +1,3 @@
-locals {
-  naming_rule = "${var.context.project}-${var.context.environment}-${var.context.region_name}"
-}
-
 ###################################### 
 # ROUTE TABLE
 ######################################

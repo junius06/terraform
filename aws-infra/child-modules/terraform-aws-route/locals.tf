@@ -1,4 +1,8 @@
 locals {
+  naming_rule = "${var.context.project}-${var.context.environment}-${var.context.region_name}"
+}
+
+locals {
   # Public Route Table (Zone분리해서 생성X)
   public_route_table_groups = toset([
     for subnet in values(var.public_subnets) :
