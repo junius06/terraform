@@ -1,0 +1,36 @@
+name: Terraform Deploy
+
+on:
+  workflow_dispatch:
+
+env:
+  ENV: dev
+
+jobs:
+  Terraform:
+    name: Terraform
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Code
+        uses: actions/checkout@v3
+
+      - uses: hashicorp/setup-terraform@v2
+        with: 
+          terraform_version: $TF_VERSION
+          cli_config_credentials_token: ${{ secrets.TF_API.TOKEN }}
+
+      - name: Terraform Init
+        id: init
+        run: terraform init -upgrade
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
+
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -lock=false -var-file="${PATH}/aws-infra/root-modules/tfvars-env/dev-eu.tfvars"
+
+      - name: Terraform Apply
+        id: plan
+        run: terraform apply -var-file="${PATH}/aws-infra/root-modules/tfvars-env/dev-eu.tfvars" -auto-approve

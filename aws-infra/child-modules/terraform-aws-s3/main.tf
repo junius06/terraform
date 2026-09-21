@@ -3,14 +3,14 @@
 ######################################
 resource "aws_s3_bucket" "this" {
   bucket = "${local.naming_rule}-${var.bucket_name}"
-  force_destroy = var.force_destroy
+  force_destroy = var.force_destroy.enabled
 
   tags = merge(
     var.common_tags,
     {
       Name              = "${local.naming_rule}-${var.bucket_name}",
-      SEC_ASSETS_PII    = "N",
-      SEC_ASSETS_PUBLIC = "N"
+      SEC_ASSETS_PII    = "N", # 필수 태깅
+      SEC_ASSETS_PUBLIC = "N"  # 필수 태깅
     },
   )
 }
@@ -22,7 +22,7 @@ resource "aws_s3_bucket_ownership_controls" "this" {
   bucket = aws_s3_bucket.this.id
 
   rule {
-    object_ownership = var.object_ownership
+    object_ownership = var.object_ownership.type
   }
 }
 
@@ -32,10 +32,10 @@ resource "aws_s3_bucket_ownership_controls" "this" {
 resource "aws_s3_bucket_public_access_block" "this" {
   bucket = aws_s3_bucket.this.id
 
-  block_public_acls       = local.block_public_acls
-  ignore_public_acls      = local.ignore_public_acls
-  block_public_policy     = local.block_public_policy
-  restrict_public_buckets = local.restrict_public_buckets
+  block_public_acls       = local.public_access_block.block_public_acls
+  ignore_public_acls      = local.public_access_block.ignore_public_acls
+  block_public_policy     = local.public_access_block.block_public_policy
+  restrict_public_buckets = local.public_access_block.restrict_public_buckets
 }
 
 ######################################
@@ -45,7 +45,7 @@ resource "aws_s3_bucket_versioning" "this" {
   bucket = aws_s3_bucket.this.id
 
   versioning_configuration {
-    status = var.Versioning_enabled ? "Enabled" : "Suspended"
+    status = var.versioning.enabled ? "Enabled" : "Suspended"
   }
 }
 
@@ -57,13 +57,11 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
 
   rule {
     apply_server_side_encryption_by_default {
-      sse_algorithm     = var.encryption_type
-      kms_master_key_id = (
-        contains(["aws:kms", "aws:kms:dsse"], var.encryption_type) ? var.bucket_key_enabled : null
-      )
+      sse_algorithm     = var.encryption.type
+      kms_master_key_id = local.kms_key_arn
     }
 
-    bucket_key_enabled = (var.encryption_type == "aws:kms" ? var.bucket_key_enabled : false)
+    bucket_key_enabled = local.bucket_key_enabled
   }
 }
 
@@ -71,28 +69,64 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
 # LifyCycle
 ######################################
 resource "aws_s3_bucket_lifecycle_configuration" "this" {
-  count = length(var.lifecycle) > 0 ? 1 : 0
-
+  count = (var.lifecycle.enabled && length(local.lifecycle_rules) > 0) ? 1 : 0
+  
   bucket = aws_s3_bucket.this.id
 
   dynamic "rule" {
-    for_each = {
-      for rule_name, rule_config in var.lifecycle.rules : 
-      rule_name => rule_config
-      if rule_config.enabled
-    }
+    for_each = local.lifecycle_rules
 
     content {
       id     = rule.key
-      status = rule.value.enabled ? "Enabled" : "Disabled"
+      status = "Enabled"
 
-      filter {
-        prefix = coalesce(rule.value.prefix, "")
+      ######################################
+      # Scope
+      ######################################
+      # All
+      dynamic "filter" {
+        for_each = (rule.value.scope.type == "all" ? [1] : [])
+
+        content {}
       }
 
+      # Filter
+      dynamic "filter" {
+        for_each = (rule.value.scope.type == "filter" ? [rule.value] : [])
+
+        content {
+          and {
+            prefix = rule.value.scope.filter.prefix
+
+            object_size_greater_than = (
+              rule.value.scope.filter.object_min.enabled
+              ? (
+                  rule.value.scope.filter.object_min.value
+                  * local.object_size_unit[rule.value.scope.filter.object_min.unit]
+                )
+              : null
+            )
+
+            object_size_less_than = (
+              rule.value.scope.filter.object_max.enabled
+              ? (
+                  rule.value.scope.filter.object_max.value
+                  * local.object_size_unit[rule.value.scope.filter.object_max.unit]
+                )
+              : null
+            )
+
+            tags = local.lifecycle_tags[rule.key]
+          }
+        }
+      }
+
+      # Current Version Transition
       dynamic "transition" {
         for_each = (
-          try(rule.value.transitions.enabled, false) ? try(rule.value.transitions.rules, []) : []
+          rule.value.operations.current_version_transition.enabled
+          ? rule.value.operations.current_version_transition.rules
+          : []
         )
 
         content {
@@ -101,27 +135,77 @@ resource "aws_s3_bucket_lifecycle_configuration" "this" {
         }
       }
 
+      # Noncurrent Version Transition
+      dynamic "noncurrent_version_transition" {
+        for_each = (
+          rule.value.operations.noncurrent_version_transition.enabled
+          ? rule.value.operations.noncurrent_version_transition.rules
+          : []
+        )
+
+        content {
+          noncurrent_days = noncurrent_version_transition.value.days
+          storage_class   = noncurrent_version_transition.value.storage_class
+
+          newer_noncurrent_versions = (noncurrent_version_transition.value.newer_noncurrent_versions)
+        }
+      }
+
+      # Current Version Expiration
       dynamic "expiration" {
-        for_each = (rule.value.expiration_days != null ? [rule.value.expiration_days] : [])
-        
+        for_each = (
+          rule.value.operations.current_version_expiration.enabled
+          ? [rule.value.operations.current_version_expiration]
+          : []
+        )
+
         content {
-          days = expiration.value
+          days = expiration.value.days
         }
       }
 
+      # Noncurrent Version Expiration
       dynamic "noncurrent_version_expiration" {
-        for_each = (rule.value.noncurrent_version_expiration_days != null ? [rule.value.noncurrent_version_expiration_days] : [])
+        for_each = (
+          rule.value.operations.noncurrent_version_expiration.enabled
+          ? [rule.value.operations.noncurrent_version_expiration]
+          : []
+        )
 
         content {
-          noncurrent_days = noncurrent_version_expiration.value
+          noncurrent_days = noncurrent_version_expiration.value.days
+
+          newer_noncurrent_versions = (
+            noncurrent_version_expiration.value.newer_noncurrent_versions
+          )
         }
       }
 
-      dynamic "abort_incomplete_multipart_upload" {
-        for_each = (rule.value.abort_incomplete_multipart_upload_days != null ? [rule.value.abort_incomplete_multipart_uploads_days] : [])
+      # Expired Object Delete Marker
+      dynamic "expiration" {
+        for_each = (
+          rule.value.operations.cleanup.expired_object_delete_marker.enabled
+          ? [1]
+          : []
+        )
 
         content {
-          days_after_initiation = abort_incomplete_multipart_upload.value
+          expired_object_delete_marker = true
+        }
+      }
+
+      # Abort Incomplete Multipart Upload
+      dynamic "abort_incomplete_multipart_upload" {
+        for_each = (
+          rule.value.operations.cleanup.abort_incomplete_multipart_upload.enabled
+          ? [rule.value.operations.cleanup.abort_incomplete_multipart_upload]
+          : []
+        )
+
+        content {
+          days_after_initiation = (
+            abort_incomplete_multipart_upload.value.days
+          )
         }
       }
     }

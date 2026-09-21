@@ -1,3 +1,6 @@
+######################################
+# 공통 변수
+######################################
 variable "context" {
   description = "Common resource context"
 
@@ -15,7 +18,9 @@ variable "common_tags" {
   default = {}
 }
 
-
+######################################
+# VPC
+######################################
 variable "vpc_name" {
   description = "VPC name"
   type        = string

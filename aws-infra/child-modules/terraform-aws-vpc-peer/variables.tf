@@ -1,3 +1,6 @@
+######################################
+# 공통 변수
+######################################
 variable "context" {
   description = "Common resource context"
 

@@ -16,13 +16,6 @@ resource "aws_vpc" "this" {
 }
 
 ###################################### 
-# VPC FLOW LOG
-######################################
-# resource "aws_flow_log" "this" {
-#   for_each = var.vpc_flow_log_s3_name
-# }
-
-###################################### 
 # PUBLIC SUBNET
 ######################################
 resource "aws_subnet" "public" {
@@ -117,4 +110,16 @@ resource "aws_nat_gateway" "nat" {
 
   # IGW dependency 설정 (IGW생성 이후 NAT Gateway생성)
   depends_on = [ aws_internet_gateway.igw ]
+}
+
+###################################### 
+# VPC FLOW LOG
+######################################
+resource "aws_flow_log" "this" {
+  vpc_id = each.value.vpc_id
+
+  log_destination_type = "s3"
+  log_destination      = var.flow_log_destination_arn
+
+  traffic_type = "ALL"
 }

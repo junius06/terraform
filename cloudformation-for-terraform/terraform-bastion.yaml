@@ -573,11 +573,15 @@ Resources:
       LogDestinationType: s3
 
       LogDestination: !Sub
-        - "arn:${AWS::Partition}:s3:::${S3Bucket}/terraform-bastion/${Env}-${Region}-vpc-flow-logs/"
+        - "arn:${AWS::Partition}:s3:::${S3Bucket}/terraform-bastion/${Project}-${Env}-${RegionName}-terraform-vpcflow/"
         - S3Bucket: !FindInMap
             - EnvMap
             - !Ref Env
             - S3Bucket
+          RegionName: !FindInMap
+            - RegionMap
+            - !Ref AWS::Region
+            - RegionName
 
-      # 10분 단위 집계
-      MaxAggregationInterval: 600
+      # 3일 단위 집계
+      MaxAggregationInterval: 4320

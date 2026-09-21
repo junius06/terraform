@@ -1,0 +1,166 @@
+######################################
+# 객체 소유권 (ACL비활성화/활성화)
+######################################
+object_ownership: 
+  # BucketOwnerEnforced   # ACL 비활성화  (객체 소유권: 버킷 소유자 적용)
+  # BucketOwnerPreferred  # ACL 활성화    (객체 소유권: 버킷 소유자 선호)
+  # ObjectWriter          # ACL 활성화    (객체 소유권: 객체 라이터)
+  type: BucketOwnerEnforced
+
+
+######################################
+# Bucket Deletion
+######################################
+force_destroy: 
+  # true:  terraform destroy 시 객체가 존재하더라도 Bucket 삭제 허용
+  # false: 객체가 존재하면 Bucket 삭제 실패
+  enabled: false
+
+
+######################################
+# Public Access 차단 설정 (ACLs)
+######################################
+block_all_public_access: 
+  # true  : 아래 개별 Public Access 설정과 관계없이 모두 true로 적용
+  # false : 아래 4개의 개별 설정값을 적용
+  enabled: true
+
+  block_public_acls: 
+    enabled: true
+
+  ignore_public_acls:
+    enabled: true
+
+  block_public_policy:
+    enabled: true
+
+  restrict_public_buckets:
+    enabled: true
+
+
+######################################
+# Versioning
+######################################
+versioning: 
+  enabled: false
+
+
+######################################
+# Server Side Encryption
+######################################
+encryption: 
+  # Supported values:
+  #   AES256       : SSE-S3
+  #   aws:kms      : SSE-KMS
+  #   aws:kms:dsse : DSSE-KMS
+  type: AES256
+
+  # encryption.type 값이 aws:kms 또는 aws:kms:dsse 일 때에만 지원
+  kms_key_arn: null
+
+  # encryption.type 값이 aws:kms 때에만 적용
+  bucket_key: 
+    enabled: true
+
+
+######################################
+# Lifecycle
+######################################
+lifecycle:
+  enabled: true
+
+  rules:
+    lifecycle_rule_name:  # 생명 주기 규칙 이름
+      enabled: false  # false: 해당 LifeCycle Rule 미생성
+
+    retention:
+      enabled: true
+
+      #####################
+      # 규칙 범위 선택
+      #####################
+      scope: 
+        # all    : 버킷의 모든 객체에 적용
+        # filter : 하나 이상의 필터를 사용하여 이 규칙의 범위 제한
+        type: all
+
+        # type: filter 선택시 적용
+        filter:
+          prefix: null  # Optional: 특정 Prefix에만 Lifecycle을 적용할 경우 사용
+
+          object_min: 
+            enabled: false
+            value: 1024 # 활성화 시 적용
+            unit: KB # B, KB, MB, GB
+
+          object_max: 
+            enabled: false
+            value: 2024 # 활성화 시 적용
+            unit: KB # B, KB, MB, GB
+
+          tags:
+            enabled: false
+            key1: value1
+            key2: value2
+
+      #####################
+      # 수명 주기 규칙 작업
+      #####################
+      operations:
+        ## 스토리지 클래스 간에 객체의 현재 버전 전환
+        current_version_transition:
+          enabled: false
+
+          rules:
+            - days: 180
+              storage_class: STANDARD_IA
+
+            - days: 180
+              storage_class: GLACIER_IR
+
+        ## 스토리지 클래스 간에 객체의 이전 버전 전환
+        noncurrent_version_transition:
+          enabled: false
+
+          rules:
+            - days: 30
+              storage_class: STANDARD_IA
+              newer_noncurrent_versions: null
+
+            - days: 90
+              storage_class: GLACIER_IR
+              newer_noncurrent_versions: null
+
+        ## 객체의 현재 버전 만료
+        current_version_expiration: 
+          enabled: true
+          days: 180
+
+        ## 객체의 이전 버전 영구 삭제
+        noncurrent_version_expiration:
+          # versioning = false 인데 이전 버전 만료 설정이 활성화되면 에러 메세지 발생
+          enabled: false
+          days: 180
+          newer_noncurrent_versions: null
+
+        ## 만료된 객체 삭제 마커 또는 
+        ## 완료되지 않은 멀티파트 업로드 삭제
+        cleanup: 
+          expired_object_delete_marker:
+            enabled: false
+
+          abort_incomplete_multipart_upload:
+            enabled: false
+            days: null
+
+
+######################################
+# Bucket Policy
+######################################
+# root-modules/s3/bucket_policies/<policy_name>.json.tftpl 에서 policy_name 입력
+## ex)) bucket_policy: vpcflow
+bucket_policy:
+  enabled: false # 정책없음
+  name: null # enabled: true 일 때 name의 기본값 null
+  # null: yaml파일 이름과 동일한 이름의 json.tftpl 파일을 가져온다.
+  # null이 아닌 값을 입력할 경우: {입력값}.json.tftpl 파일을 가져온다.

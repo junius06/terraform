@@ -1,0 +1,29 @@
+object_ownership: 
+  type: BucketOwnerEnforced
+
+force_destroy: 
+  enabled: true # 테스트 완료 후 최종 false로 적용
+
+lifecycle:
+  enabled: true
+
+  rules:
+    retention:
+      enabled: true
+
+      scope:
+        type: all
+
+      operations:
+        # 180일 지난 오브젝트 삭제
+        current_version_expiration: 
+          enabled: true
+          days: 180
+
+        cleanup: 
+          abort_incomplete_multipart_upload:
+            enabled: true
+            days: 7
+
+bucket_policy:
+  enabled: true

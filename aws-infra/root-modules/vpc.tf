@@ -22,7 +22,11 @@ module "vpc" {
   # create_s3_endpoint      = true
   # create_ecr_endpoint     = true
 
-  # vpc_flow_log_s3_name = each.value.vpc_flow
+  flow_log_destination_arn = module.s3["vpcflow"].bucket_arn
+
+  depends_on = [ 
+    module.s3
+  ]
 
   context     = local.context
   common_tags = local.common_tags

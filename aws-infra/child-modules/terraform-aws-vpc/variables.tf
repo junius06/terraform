@@ -1,3 +1,6 @@
+######################################
+# 공통 변수
+######################################
 variable "context" {
   description = "Common resource context"
 
@@ -15,7 +18,9 @@ variable "common_tags" {
   default = {}
 }
 
-
+######################################
+# VPC
+######################################
 variable "vpc_name" {
   description = "VPC name"
   type        = string
@@ -32,7 +37,9 @@ variable "vpc_cidr" {
   }
 }
 
-
+######################################
+# Subnet
+######################################
 variable "public_subnets" {
   description = "Map of public subnets"
 
@@ -65,6 +72,9 @@ variable "nat_gateway_subnets" {
   }
 }
 
+######################################
+# Settings
+######################################
 variable "enable_dns_hostnames" {
   description = "Should be true to enable DNS hostnames in the VPC"
   type      = bool
@@ -83,7 +93,10 @@ variable "vpc_peering_ids" {
   default     = {}
 }
 
-# variable "vpc_flow_log_s3_name" {
-#   description = "VPC FLOW Log S3 Bucket Name"
-#   type        = string
-# }
+######################################
+# VPC FLOW LOG
+######################################
+variable "flow_log_destination_arn" {
+  description = "S3 Bucket ARN for VPC Flow Logs"
+  type        = string
+}
