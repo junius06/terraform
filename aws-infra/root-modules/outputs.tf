@@ -19,6 +19,6 @@ output "vpc_peering_ids" {
 
   value = {
     for key, peering in module.vpc_peering :
-    key => peering.id
+    key => peering.vpc_peering_connection_id
   }
 }

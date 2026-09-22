@@ -21,8 +21,9 @@ module "route_table" {
   ] : []
 
   vpc_peering_ids = {
-    for key, peering in module.vpc_peering :
-    key => peering.vpc_peering_connection_id
+    for key, peering in local.vpc_peerings :
+    peering.accepter_vpc_alias => module.vpc_peering[key].vpc_peering_connection_id
+    if peering.requester_vpc_alias == each.key
   }
 
   context     = local.context
