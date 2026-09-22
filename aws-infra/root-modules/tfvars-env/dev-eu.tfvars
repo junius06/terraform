@@ -103,7 +103,7 @@ vpcs = {
     # VPC Peering
     ######################################
     vpc_peerings = {
-      db = {
+      legacy = {
         enable = true
 
         accepter_vpc_id      = "vpc-d96c8cbc"

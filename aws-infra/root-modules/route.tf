@@ -20,6 +20,11 @@ module "route_table" {
     if route.vpc == each.key
   ] : []
 
+  vpc_peering_ids = {
+    for name, peering in module.vpc_peering :
+    name => peering.vpc_peering_connection_id
+  }
+
   context     = local.context
   common_tags = local.common_tags
 }

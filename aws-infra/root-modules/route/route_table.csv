@@ -1,5 +1,5 @@
 id,vpc,route_table,dst_cidr_block,target_type,target,description
-001,main,fmm-pri-a-rt,10.105.4.0/24,peering,db,From FMM NodeGroup A-Zone to DB
-002,main,fmm-pri-a-rt,10.105.14.0/24,peering,db,From FMM NodeGroup A-Zone to DB
-003,main,fmm-pri-b-rt,10.105.4.0/24,peering,db,From FMM NodeGroup B-Zone to DB
-004,main,fmm-pri-b-rt,10.105.14.0/24,peering,db,From FMM NodeGroup B-Zone to DB
+001,main,fmm-pri-a-rt,10.105.4.0/24,peering,legacy,From FMM NodeGroup A-Zone to DB
+002,main,fmm-pri-a-rt,10.105.14.0/24,peering,legacy,From FMM NodeGroup A-Zone to DB
+003,main,fmm-pri-b-rt,10.105.4.0/24,peering,legacy,From FMM NodeGroup B-Zone to DB
+004,main,fmm-pri-b-rt,10.105.14.0/24,peering,legacy,From FMM NodeGroup B-Zone to DB
