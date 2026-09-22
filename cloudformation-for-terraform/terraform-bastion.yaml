@@ -558,8 +558,30 @@ Resources:
       InstanceId: !Ref TerraformBastion
 
   # ============================================================
-  # VPC Flow Logs
+  # VPC Flow Logs + S3 Bucket
   # ============================================================
+  FlowLogBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !FindInMap
+        - EnvMap
+        - !Ref Env
+        - S3Bucket
+
+      LifecycleConfigurations:
+        Rules:
+          - Id: DeleteVpcFlowLogAfter7Days
+            Status: Enabled
+
+            Prefix: !Sub
+              - "terraform-bastion/${Project}-${Env}-${RegionName}-terraform-vpcflow/"
+              - RegionName:
+                  - RegionMap
+                  - !Ref AWS::Region
+                  - RegionName
+                  
+            ExpirationInDays: 7
+
   VpcFlowLog:
     Type: AWS::EC2::FlowLog
     Properties:
@@ -583,5 +605,5 @@ Resources:
             - !Ref AWS::Region
             - RegionName
 
-      # 3일 단위 집계
-      MaxAggregationInterval: 4320
+      # 10분 단위 집계 (60s, 600s 둘 중 하나만 선택 가능)
+      MaxAggregationInterval: 600
