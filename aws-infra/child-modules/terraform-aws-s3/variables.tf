@@ -232,7 +232,7 @@ variable "lifecycle_config" {
   ############ 검증 ############
   validation {
     condition = alltrue([
-      for rule in var.lifecycle.rules :
+      for rule in var.lifecycle_config.rules :
       !rule.enabled ||
       contains(
         ["all", "filter"],
@@ -246,7 +246,7 @@ variable "lifecycle_config" {
   # scope.type = filter 인 경우, 최소 하나 이상의 filter 필요
   validation {
     condition = alltrue([
-      for rule in var.lifecycle.rules :
+      for rule in var.lifecycle_config.rules :
 
       !rule.enabled 
       || 
@@ -269,7 +269,7 @@ variable "lifecycle_config" {
   # Object Size Unit Validation
   validation {
     condition = alltrue([
-      for rule in var.lifecycle.rules :
+      for rule in var.lifecycle_config.rules :
 
       !rule.enabled
       ||
@@ -300,7 +300,7 @@ variable "lifecycle_config" {
   # Object Size Value Validation
   validation {
     condition = alltrue([
-      for rule in var.lifecycle.rules :
+      for rule in var.lifecycle_config.rules :
 
       !rule.enabled
       ||
@@ -333,12 +333,12 @@ variable "lifecycle_config" {
   # Versioning Validation: Noncurrent 관련 작업은 Versioning 활성화 필요
   validation {
     condition = (
-      !var.lifecycle.enabled
+      !var.lifecycle_config.enabled
       ||
       var.versioning.enabled
       ||
       alltrue([
-        for rule in var.lifecycle.rules :
+        for rule in var.lifecycle_config.rules :
 
         !rule.enabled
         ||
@@ -356,7 +356,7 @@ variable "lifecycle_config" {
   # Current Version Transition
   validation {
     condition = alltrue([
-      for rule in var.lifecycle.rules :
+      for rule in var.lifecycle_config.rules :
 
       !rule.enabled
       ||
@@ -373,7 +373,7 @@ variable "lifecycle_config" {
   # Noncurrent Version Transition
     validation {
     condition = alltrue([
-      for rule in var.lifecycle.rules :
+      for rule in var.lifecycle_config.rules :
 
       !rule.enabled
       ||
@@ -390,7 +390,7 @@ variable "lifecycle_config" {
   # Current Version Expiration
     validation {
     condition = alltrue([
-      for rule in var.lifecycle.rules :
+      for rule in var.lifecycle_config.rules :
 
       !rule.enabled
       ||
@@ -409,7 +409,7 @@ variable "lifecycle_config" {
   # Noncurrent Version Expiration
     validation {
     condition = alltrue([
-      for rule in var.lifecycle.rules :
+      for rule in var.lifecycle_config.rules :
 
       !rule.enabled
       ||
@@ -428,7 +428,7 @@ variable "lifecycle_config" {
   # Abort Incomplete Multipart Upload
     validation {
     condition = alltrue([
-      for rule in var.lifecycle.rules :
+      for rule in var.lifecycle_config.rules :
 
       !rule.enabled
       ||
