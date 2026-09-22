@@ -11,7 +11,7 @@ module "s3" {
   block_all_public_access = each.value.block_all_public_access
   versioning              = each.value.versioning
   encryption              = each.value.encryption
-  lifecycle               = each.value.lifecycle_config
+  lifecycle_config        = each.value.lifecycle
 
   bucket_policy = (
     each.value.bucket_policy.enabled
