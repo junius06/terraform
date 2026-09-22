@@ -69,7 +69,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
 # LifyCycle
 ######################################
 resource "aws_s3_bucket_lifecycle_configuration" "this" {
-  count = (var.lifecycle.enabled && length(local.lifecycle_rules) > 0) ? 1 : 0
+  count = (var.lifecycle_config.enabled && length(local.lifecycle_rules) > 0) ? 1 : 0
   
   bucket = aws_s3_bucket.this.id
 

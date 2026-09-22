@@ -61,9 +61,9 @@ locals {
   # lifecycle.enabled = true
   # → rules[*].enabled = true인 Rule만 추출
   lifecycle_rules = (
-    var.lifecycle.enabled
+    var.lifecycle_config.enabled
     ? {
-        for rule_name, rule in var.lifecycle.rules :
+        for rule_name, rule in var.lifecycle_config.rules :
         rule_name => rule
         if rule.enabled
       }
