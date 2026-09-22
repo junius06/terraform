@@ -4,8 +4,11 @@ object_ownership:
 force_destroy: 
   enabled: true # 테스트 완료 후 최종 false로 적용
 
-lifecycle:
+block_all_public_access: 
   enabled: true
+
+# lifecycle:
+#   enabled: true
 
   rules:
     retention:

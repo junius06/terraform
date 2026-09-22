@@ -6,12 +6,12 @@ module "s3" {
   # YAML 파일명을 bucket의 논리적 이름으로 사용
   bucket_name = each.key
 
-  object_ownership        = each.value.object_ownership
-  force_destroy           = each.value.force_destroy
-  block_all_public_access = each.value.block_all_public_access
-  versioning              = each.value.versioning
-  encryption              = each.value.encryption
-  lifecycle_config        = each.value.lifecycle
+  object_ownership        = try(each.value.object_ownership, {})
+  force_destroy           = try(each.value.force_destroy, {})
+  block_all_public_access = try(each.value.block_all_public_access, {})
+  versioning              = try(each.value.versioning, {})
+  encryption              = try(each.value.encryption, {})
+  lifecycle_config        = try(each.value.lifecycle, {})
 
   bucket_policy = (
     each.value.bucket_policy.enabled
