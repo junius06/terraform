@@ -115,8 +115,8 @@ resource "aws_nat_gateway" "nat" {
 ###################################### 
 # VPC FLOW LOG
 ######################################
-resource "aws_flow_log" "this" {
-  vpc_id = each.value.vpc_id
+resource "aws_flow_log" "this" {  
+  vpc_id = aws_vpc.this.id
 
   log_destination_type = "s3"
   log_destination      = var.flow_log_destination_arn
