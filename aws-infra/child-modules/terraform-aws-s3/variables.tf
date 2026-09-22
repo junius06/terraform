@@ -151,7 +151,7 @@ variable "encryption" {
 ######################################
 # LifyCycle
 ######################################
-variable "lifecycle" {
+variable "lifecycle_config" {
   description = "S3 Lifecycle configuration"
 
   type = object({
