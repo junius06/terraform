@@ -161,6 +161,9 @@ lifecycle:
 ## ex)) bucket_policy: vpcflow
 bucket_policy:
   enabled: false # 정책없음
-  name: null # enabled: true 일 때 name의 기본값 null
-  # null: yaml파일 이름과 동일한 이름의 json.tftpl 파일을 가져온다.
-  # null이 아닌 값을 입력할 경우: {입력값}.json.tftpl 파일을 가져온다.
+  name: null
+  # enabled: false 일 경우: name의 값에 아무 영향을 받지 않고 정책을 생성하지 않는다.
+  # enabled: true 일 경우 :
+  ## 1. name: 필드없음  -> 에러 메세지 반환
+  ## 2. name: null      -> yaml파일의 이름과 동일한 {name}.json.tftpl 정책 생성 및 적용
+  ## 3. name: {name2}   -> {name2}.json.tftpl 정책 생성 및 적용

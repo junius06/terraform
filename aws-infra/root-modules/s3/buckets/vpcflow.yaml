@@ -4,8 +4,8 @@ object_ownership:
 force_destroy: 
   enabled: true # 테스트 완료 후 최종 false로 적용
 
-# block_all_public_access: 
-#   enabled: true
+block_all_public_access: 
+  enabled: true
 
 lifecycle:
   enabled: true
@@ -30,3 +30,4 @@ lifecycle:
 
 bucket_policy:
   enabled: true
+  name: null
