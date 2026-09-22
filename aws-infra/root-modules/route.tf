@@ -22,7 +22,7 @@ module "route_table" {
 
   vpc_peering_ids = {
     for key, peering in module.vpc_peering :
-    key = peering.vpc_peering_connection_id
+    key => peering.vpc_peering_connection_id
   }
 
   context     = local.context
