@@ -35,7 +35,7 @@ resource "aws_subnet" "public" {
   )
 }
 
-###################################### 
+######################################
 # PRIVATE SUBNET
 ######################################
 resource "aws_subnet" "private" {
@@ -81,7 +81,7 @@ resource "aws_eip" "nat_eip" {
 
   # NAT EIP 삭제 방지
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 
   tags = merge(

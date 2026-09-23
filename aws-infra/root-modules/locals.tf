@@ -62,7 +62,7 @@ locals {
   additional_routes = anytrue([
     for vpc in values(var.vpcs) : # enable_additional_routes=false일 경우 안 읽고, true일 경우 csv파일을 decode > read 
     vpc.enable_additional_routes
-  ]) ? csvdecode(file("${path.module}/route/route_table.csv")) : []
+  ]) ? csvdecode(file("${path.module}/route_tables/${var.environment}-${local.region_prefix}.csv")) : []
 }
 
 ######################################
