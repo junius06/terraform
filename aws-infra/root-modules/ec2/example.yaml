@@ -1,0 +1,99 @@
+######################################
+# Instance
+######################################
+# 동일한 템플릿으로 생성할 EC2 수량, Number of EC2 instances to create
+ec2_count: 2
+
+ami_id: "ami-xxxxxxxxxxxxx"
+instance_type: "t4g.small"
+
+monitoring: false
+
+######################################
+# Network
+######################################
+network:
+  vpc_name: "main"
+
+  # public / private
+  subnet_type: "public"
+
+  # subnet name
+  subnet_group: "gw"
+
+  zones: 
+    - "a"
+    - "b"
+
+associate_public_ip_address: false
+
+######################################
+# Key Pair
+######################################
+# Final key name:
+# ${local.naming_rule}-${suffix}
+# Example: dev-eu-ireland-key
+key_name: 
+  suffix: "key"
+
+######################################
+# IAM Instance Profile
+######################################
+iam_instance_profile: 
+  enabled: true
+
+######################################
+# Elastic IP
+######################################
+eip:
+  enabled: true
+  private_ip: "10.5.0.1"
+
+######################################
+# User Data
+######################################
+# user_data: null # UserData 미사용
+user_data:
+  file: "example.sh"
+
+######################################
+# EBS (Root, Additional)
+######################################
+root_volume:
+  volume_type: "gp3"
+  volume_size: 30
+
+  iops: 3000
+  throughput: 125
+
+  encrypted: true
+  kms_key_id: null # null = AWS managed key
+
+  delete_on_termination: true
+
+ebs_volumes: {}
+  # data_name_1:
+  #   device_name: "/dev/sdb"
+
+  #   volume_type: "gp3"
+  #   volume_size: 50
+
+  #   iops: 3000
+  #   throughput: 125
+
+  #   encrypted: true
+  #   kms_key_id: null
+
+  #   tags:
+  #     purpose: "data"
+
+######################################
+# Options
+######################################
+metadata_options:
+  http_put_response_hop_limit : "1"
+  http_tokens : "required"
+
+# 개별 인스턴스마다 필요한 Tag 정의
+tags:
+  Role: "Example"

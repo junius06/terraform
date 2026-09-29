@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-deployment
+  labels:
+    app: postgres
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_USER
+          value: "tux"
+        - name: POSTGRES_DB
+          value: "Kubernetes"
+        - name: POSTGRES_PASSWORD
+          value: "Kubernetes123"
+      tolerations:
+      - key: "role"
+        operator: "Equal"
+        value: "ops"
+        effect: "NoSchedule"

@@ -19,82 +19,66 @@ variable "common_tags" {
   default = {}
 }
 
-######################################
-# Common EC2 configuration
-######################################
-variable "default_instance_type" {
-  description = "Default EC2 instance type"
-  type        = string
+variable "naming_rule" {
+  type = string
 }
 
-variable "default_ami_id" {
-  description = "Default AMI ID"
+variable "ipa_user" {
+  description = "IPA User"
   type        = string
-}
-
-variable "default_key_name" {
-  description = "Default EC2 Key Pair name"
-  type        = string
-  default     = null
-}
-
-variable "default_iam_instance_profile" {
-  description = "Default IAM Instance Profile name"
-  type        = string
-  default     = null
-}
-
-variable "default_security_group_ids" {
-  description = "Default Security Group IDs"
-  type        = list(string)
-  default     = []
 }
 
 ######################################
 # EC2 Instances
 ######################################
-variable "Instances" {
-  description = "EC2 instance definitions"
+variable "instances" {
+  description = "EC2 instance configurations"
 
   type = map(object({
+    #### EC2 ####
     ami_id        = string
     instance_type = string
     
-    key_name      = optional(string)
+    key_name             = optional(string)
+    iam_instance_profile = optional(string)
 
-    # Network
-    vpc_id                      = string
-    subnet_id                   = string
+    monitoring = optional(bool, false)
+
+    user_data = optional(string)
+
+    #### Network ####
+    subnet_id = string
+
+    security_group_ids   = optional(list(string), [])
+
     associate_public_ip_address = optional(bool, false)
 
-    security_group_ids   = list(string)
-    iam_instance_profile = string
-
+    #### EIP ####
     eip = optional(object({
       enabled = optional(bool, false)
     }), {})
 
-    # Storage
-    ## Root Volume
-    root_volume = optional(object({
+    #### Root Volume ####
+    root_volume = object({
       volume_type = optional(string, "gp3")
-      volume_size = optional(number, 30)
-      iops = optional(number, 3000)
+      volume_size = number
+
+      iops       = optional(number, 3000)
       throughput = optional(number, 125)
-      encrypted = optional(bool, true)
-      
+
+      encrypted  = optional(bool, true)
       kms_key_id = optional(string)
-      delete_on_termination = optional(bool, false)
 
-      tags = optional(map(string), {})
-    }), {})
+      delete_on_termination = optional(bool, true)
+    })
 
-    ## Additional EBS Volumes
+    #### Additional EBS Volumes ####
     ebs_volumes = optional(map(object({
       device_name = string
 
       volume_type = optional(string, "gp3")
       volume_size = number
+
       iops        = optional(number, 3000)
       throughput  = optional(number, 125)
 
@@ -103,16 +87,15 @@ variable "Instances" {
 
       delete_on_termination = optional(bool, false)
 
+      stop_instance_before_detaching = optional(bool, false)
+
       tags = optional(map(string), {})
     })), {})
-
-    user_data = optional(string)
-
-    monitoring = optional(bool, false)
 
     tags = optional(map(string), {})
   }))
 
+  default = {}
   # validation {
   #   instance_type = arm64 아키텍처여야만 한다.
   # }
