@@ -52,7 +52,7 @@ resource "aws_instance" "this" {
       var.common_tags,
       each.value.tags,
       {
-        Name = "${var.naming_rule}-${each.key}-ebs-root"
+        Name = "${each.key}-ebs-root"
       }
     )
   }
@@ -62,8 +62,8 @@ resource "aws_instance" "this" {
     var.common_tags,
     each.value.tags,
     {
-      Name        = "${var.naming_rule}-${each.key}"
-      IPA_TAGS    = "${var.naming_rule}-${each.key}, app-account:${var.ipa_user}"
+      Name        = each.key
+      IPA_TAGS    = "${each.key}, app-account:${var.ipa_user}"
     }
   )
 }

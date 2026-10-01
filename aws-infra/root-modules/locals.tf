@@ -92,13 +92,7 @@ locals {
 ######################################
 # EC2
 ######################################
-locals {
-  key_name = (
-    try(config.key_name.suffix, null) != null
-    ? "${local.naming_rule}-${config.key_name.suffix}"
-    : null
-  )
-
+locals { 
   # ec2 생성하기 위한 yaml파일 탐색
   ec2_files = [
     for file_name in fileset("${path.module}/ec2", "*.yaml")
@@ -126,6 +120,12 @@ locals {
           #### Instance
           ec2_name = ec2_name
           instnace_type = config.instance_type
+
+          key_name = (
+            try(config.key_name.suffix, null) != null
+            ? "${local.naming_rule}-${config.key_name.suffix}"
+            : null
+          )
 
           monitoring = try(
             config.monitoring,
@@ -192,7 +192,7 @@ locals {
 check "ec2_configuration" {
   assert {
     condition = alltrue([
-      for ec2_name, config in local.ec2.definitions :
+      for ec2_name, config in local.ec2_definitions :
       config.count > 0 && 
       config.count <= 10 &&
       length(config.network.zones) > 0
