@@ -1,10 +1,9 @@
 ######################################
 # Instance
 ######################################
-# 동일한 템플릿으로 생성할 EC2 수량, Number of EC2 instances to create
-ec2_count: 2
+# 동일한 템플릿으로 생성할 EC2 수량: count and the number of zones should match.
+count: 2
 
-ami_id: "ami-xxxxxxxxxxxxx"
 instance_type: "t4g.small"
 
 monitoring: false
@@ -52,9 +51,9 @@ eip:
 ######################################
 # User Data
 ######################################
-# user_data: null # UserData 미사용
 user_data:
   file: "example.sh"
+# user_data: null # UserData 미사용
 
 ######################################
 # EBS (Root, Additional)

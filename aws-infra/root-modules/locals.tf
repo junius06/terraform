@@ -114,19 +114,6 @@ locals {
       file("${path.module}/ec2/${file_name}")
     )
   }
-
-  ## EC2 Validation
-  # check "ec2_count_and_zones" {
-  #   assert {
-  #     condition = alltrue([
-  #       for ec2_name, config in local.ec2_definitions :
-  #       config.ec2_count > 0 &&
-  #       config.ec2_count <= length(config.zones)
-  #     ])
-
-  #     error_message = "Each EC2 definition must have ec2_count > 0 and enough zones for ec2_count."
-  #   }
-  # }
 }
 
 locals {
@@ -134,8 +121,83 @@ locals {
     {},
     [
       for ec2_name, config in local.ec2_definitions : {
-        for index in range(config.ec2_count) :
+        for index in range(config.count) :
+        "${local.naming_rule}-${ec2_name}-${index + 1}${config.network.zones[index % length(config.network.zones)]}" => {
+          #### Instance
+          ec2_name = ec2_name
+          instnace_type = config.instance_type
+
+          monitoring = try(
+            config.monitoring,
+            false
+          )
+
+          #### Network
+          network = config.network
+
+          zone = config.network.zones[
+            index % length(config.network.zones)
+          ]
+
+          associate_public_ip_address = try(
+            config.associate_public_ip_address,
+            false
+          )
+
+          #### Key Pair
+          key_name = (
+            try(config.key_name.suffix, null) != null
+            ? "${local.naming_rule}-${config.key_name.suffix}"
+            : null
+          )
+
+          #### IAM Instance Profile
+          iam_instance_profile = try(
+            config.iam_instance_profile,
+            null
+          )
+
+          #### Elastic IP
+          eip = try(
+            config.eip,
+            {
+              enabled = false
+            }
+          )
+
+          #### UserData
+          user_data_file = try(
+            config.user_data.file,
+            null
+          )
+
+          #### Volume
+          root_volume = config.root_volume
+          ebs_volumes = try(
+            config.ebs_volumes,
+            {}
+          )
+
+          #### Tags
+          tags = try(
+            config.tags,
+            {}
+          )
+        }
       }
-    ]
+    ]...
   )
+}
+
+check "ec2_configuration" {
+  assert {
+    condition = alltrue([
+      for ec2_name, config in local.ec2.definitions :
+      config.count > 0 && 
+      config.count <= 10 &&
+      length(config.network.zones) > 0
+    ])
+
+    error_message = "EC2 count must be greater than 0 and at least zone mush be defined."
+  }
 }

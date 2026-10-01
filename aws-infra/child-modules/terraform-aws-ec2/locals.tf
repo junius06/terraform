@@ -23,6 +23,6 @@ locals {
           }
         )
       }
-    ]...
+    ]... # EC2가 하나도 없거나 Additional EBS가 하나도 없어도 local.ebs_volumes = {} 되도록 설정.
   )
 }

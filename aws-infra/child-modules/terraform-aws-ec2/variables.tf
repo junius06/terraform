@@ -1,26 +1,22 @@
 ######################################
 # 공통 변수
 ######################################
-variable "context" {
-  description = "Common resource context"
+# variable "context" {
+#   description = "Common resource context"
 
-  type = object({
-    project     = string
-    environment = string
-    region_name = string
-    region_code = string
-    region      = string
-  })
-}
+#   type = object({
+#     project     = string
+#     environment = string
+#     region_name = string
+#     region_code = string
+#     region      = string
+#   })
+# }
 
 variable "common_tags" {
   description = "Common Tags"
   type    = map(string)
   default = {}
-}
-
-variable "naming_rule" {
-  type = string
 }
 
 variable "ipa_user" {

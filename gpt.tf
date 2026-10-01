@@ -1,38 +1,110 @@
-Root  = YAML/UserData 파일 탐색·해석 + AWS 리소스 간 연결
-Child = 전달받은 최종 설정으로 EC2/EIP/EBS 생성
+1. Child-Modules (EC2 + Root EBS + Additional EBS + EIP 생성)
+  1. variables.tf
+  2. locals.tf
+  3. main.tf
+  4. outputs.tf
+2. Root-Modules 
+  1. eks-mgmt.yaml 파일 작성 완료
+  2. userdata eks-mgmt.sh 작성 완료
+  3.
 
 
-terraform 실행 시, root-modules/ec2.tf 파일에 선언된 ec2를 생성하도록 실행됨
+######################################
+# EC2
+######################################
 
-ec2.tf 파일이 실행되면서 root-modules/ec2/<ec2-name>.yaml 파일에 정의된 인스턴스들을 생성. (단, yaml파일에 ec2_count 변수를 둠. count가 1일 경우 한 대만 생성되며 ec2 Tag Name은 ${local.naming_rule}-<ec2-name>-<count number><zone> 로 자동 설정됨.
+module "ec2" {
+  source = "../child-modules/terraform-aws-ec2"
 
-UserData는 root-modules/ec2/uesr-data/<userdata-name>.sh로 정의하여, yaml 파일에서 필요한 userdata 값을 불러옴.
+  instances = {
+    for instance_name, instance in local.ec2_instances :
 
-root-modules/ec2/ 하위에 어떤 yaml파일도 존재하지 않을 경우 EC2 생성하지 않고 지나감. (경고 메세지도 없고, 메세지 한 줄만 출력. ㅡ "EC2가 정의되지 않아 생성하지 않습니다.")
+    instance_name => {
 
-root-modules/ec2.tf 에서 생성하고자 하는 yaml 파일을 읽으면, child-modules이 내용을 전달받아 정의된 yaml파일을 읽어서 필요한 ec2를 생성함.
+      ################################
+      # Instance
+      ################################
+
+      ami_id = data.aws_ssm_parameter.al2023_arm64.value
+
+      instance_type = instance.instance_type
+
+      key_name = instance.key_name
+
+      iam_instance_profile = (
+        instance.iam_instance_profile
+      )
+
+      monitoring = instance.monitoring
 
 
+      ################################
+      # Network
+      ################################
 
-terraform apply
-      │
-      ▼
-root-modules/ec2.tf
-      │
-      ├─ root-modules/ec2/*.yaml 탐색
-      │
-      ├─ YAML 파일명 → EC2 종류 이름
-      │
-      ├─ ec2_count만큼 인스턴스 설정 확장
-      │
-      ├─ UserData .sh 읽기
-      │
-      └─ VPC/Subnet 등의 실제 ID 해석
-      │
-      ▼
-child-modules/terraform-aws-ec2
-      │
-      ├─ aws_instance
-      ├─ aws_eip
-      ├─ aws_ebs_volume
-      └─ aws_volume_attachment
+      subnet_id = (
+        instance.network.subnet_type == "public"
+        ? module.vpc[
+            instance.network.vpc_name
+          ].public_subnet_id[
+            "${instance.network.subnet_group}-${instance.zone}"
+          ]
+        : module.vpc[
+            instance.network.vpc_name
+          ].private_subnet_id[
+            "${instance.network.subnet_group}-${instance.zone}"
+          ]
+      )
+
+      # Security Group module will be connected later.
+      security_group_ids = []
+
+      associate_public_ip_address = (
+        instance.associate_public_ip_address
+      )
+
+
+      ################################
+      # Elastic IP
+      ################################
+
+      eip = instance.eip
+
+
+      ################################
+      # User Data
+      ################################
+
+      user_data = (
+        instance.user_data_file != null
+        ? file(
+            "${path.module}/ec2/user-data/${instance.user_data_file}"
+          )
+        : null
+      )
+
+
+      ################################
+      # Root Volume
+      ################################
+
+      root_volume = instance.root_volume
+
+
+      ################################
+      # Additional EBS Volumes
+      ################################
+
+      ebs_volumes = instance.ebs_volumes
+
+
+      ################################
+      # Tags
+      ################################
+
+      tags = instance.tags
+    }
+  }
+
+  common_tags = local.common_tags
+}

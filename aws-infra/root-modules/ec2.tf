@@ -5,30 +5,60 @@ module "ec2" {
     for instance_name, instance in local.ec2_instances :
 
     instance_name => {
-      # Instance
-      ami_id = instance.ami_id
+      #### Instance
+      ami_id = data.aws_ssm_parameter.al2023_arm64.value
       instance_type = instance.instance_type
 
-      key_name = try(
-        instance.key_name, null
+      key_name = instance.key_name
+
+      iam_instance_profile = (
+        instance.iam_instance_profile
       )
 
-      iam_instance_profile = try(
-        instance.iam_instance_profile, null
+      monitoring = instance.monitoring
+
+      #### Network
+      subnet_id = (
+        instance.network.subnet_type == "public"
+        ? module.vpc[
+          instance.network.vpc_name
+        ].public_subnet_id[
+          "${instance.network.subnet_group}-${instance.zone}"
+        ]
+        : module.vpc[
+          instance.network.vpc_name
+        ].private_subnet_id[
+          "${instance.network.subnet_group}-${instance.zone}"
+        ]
       )
 
-      monitoring = try(
-        instance.monitoring, false
+      security_group_ids = []
+
+      associate_public_ip_address = (
+        instance.associate_public_ip_address
       )
 
-      # Network
+      #### Elastic IP
+      eip = instance.eip
+
+      #### User Data
+      user_data =(
+        instance.user_data_file != null
+        ? file(
+          "${path.module}/ec2/user-data/${instance.user_data_file}"
+        )
+        : null
+      )
+
+      #### Root & Additional EBS Volume
+      root_volume = instance.root_volume
+      ebs_volumes = instance.ebs_volumes
+
+      #### Tags
+      tags = instance.tags
     }
   }
-  ipa_user = local.ipa_user
 
-  user_data = (
-    try(instance.user_data.file, null) != null
-    ? file("${path.module}/ec2/user-data/${instance.user_data.file}")
-    : null
-  )
+  ipa_user = local.ipa_user
+  common_tags = local.common_tags
 }
