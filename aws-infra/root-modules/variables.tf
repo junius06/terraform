@@ -74,32 +74,3 @@ variable "vpcs" {
     })), {}) # tfvars파일에서 vpcs.{vpc_name}.vpc_peering가 존재하지 않을 경우 값 없음
   }))
 }
-
-###################################### 
-# EC2
-######################################
-# variable "ec2_instances" {
-#   description = "EC2 instance configuration"
-
-#   type = map(object({
-#     # Network
-#     vpc_name     = string
-#     subnet_group = string
-#     zone         = string
-
-#     security_group_ids = optional(list(string), [])
-
-#     # Instance
-#     ami_id = string
-#     instance_type = string
-
-#     key_name             = optional(string)
-#     iam_instance_profile = optional(string)
-
-#     associate_public_ip_address = optional(bool, false)
-
-#     monitoring = optional(bool, false)
-
-#     user_data = optional(string)
-#   }))
-# }

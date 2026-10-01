@@ -121,12 +121,6 @@ locals {
           ec2_name = ec2_name
           instance_type = config.instance_type
 
-          key_name = (
-            try(config.key_name.suffix, null) != null
-            ? "${local.naming_rule}-${config.key_name.suffix}"
-            : null
-          )
-
           monitoring = try(
             config.monitoring,
             false
@@ -147,7 +141,7 @@ locals {
           #### Key Pair
           key_name = (
             try(config.key_name.suffix, null) != null
-            ? "${local.naming_rule}-${config.key_name.suffix}"
+            ? "${var.project}-${var.environment}-${local.region_code}-${config.key_name.suffix}"
             : null
           )
 
