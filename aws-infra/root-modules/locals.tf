@@ -119,7 +119,7 @@ locals {
         "${local.naming_rule}-${ec2_name}-${index + 1}${config.network.zones[index % length(config.network.zones)]}" => {
           #### Instance
           ec2_name = ec2_name
-          instnace_type = config.instance_type
+          instance_type = config.instance_type
 
           key_name = (
             try(config.key_name.suffix, null) != null
