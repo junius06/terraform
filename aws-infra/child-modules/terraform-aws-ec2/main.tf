@@ -142,7 +142,7 @@ resource "aws_eip" "this" {
     var.common_tags,
     each.value.tags,
     {
-      Name = "${each.value.instance_name}-eip"
+      Name = "${each.key}-eip"
     }
   )
 }
