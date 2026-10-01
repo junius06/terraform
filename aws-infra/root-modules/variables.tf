@@ -78,28 +78,28 @@ variable "vpcs" {
 ###################################### 
 # EC2
 ######################################
-variable "ec2_instances" {
-  description = "EC2 instance configuration"
+# variable "ec2_instances" {
+#   description = "EC2 instance configuration"
 
-  type = map(object({
-    # Network
-    vpc_name     = string
-    subnet_group = string
-    zone         = string
+#   type = map(object({
+#     # Network
+#     vpc_name     = string
+#     subnet_group = string
+#     zone         = string
 
-    security_group_ids = optional(list(string), [])
+#     security_group_ids = optional(list(string), [])
 
-    # Instance
-    ami_id = string
-    instance_type = string
+#     # Instance
+#     ami_id = string
+#     instance_type = string
 
-    key_name             = optional(string)
-    iam_instance_profile = optional(string)
+#     key_name             = optional(string)
+#     iam_instance_profile = optional(string)
 
-    associate_public_ip_address = optional(bool, false)
+#     associate_public_ip_address = optional(bool, false)
 
-    monitoring = optional(bool, false)
+#     monitoring = optional(bool, false)
 
-    user_data = optional(string)
-  }))
-}
+#     user_data = optional(string)
+#   }))
+# }
