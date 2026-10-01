@@ -152,9 +152,10 @@ locals {
           )
 
           #### IAM Instance Profile
-          iam_instance_profile = try(
-            config.iam_instance_profile,
-            null
+          iam_instance_profile = (
+            try(config.iam_instance_profile.suffix, null) != null
+            ? "${local.naming_rule}-${config.iam_instance_profile.suffix}"
+            : null
           )
 
           #### Elastic IP

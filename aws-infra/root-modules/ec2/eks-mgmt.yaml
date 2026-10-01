@@ -38,8 +38,8 @@ key_name:
 ######################################
 # IAM Instance Profile
 ######################################
-iam_instance_profile: 
-  enabled: false
+iam_instance_profile: {}
+  # suffix: "eks-mgmt"
 
 ######################################
 # Elastic IP

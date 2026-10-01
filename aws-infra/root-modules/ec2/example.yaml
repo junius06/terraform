@@ -32,14 +32,17 @@ associate_public_ip_address: false
 # Final key name:
 # ${local.naming_rule}-${suffix}
 # Example: dev-eu-ireland-key
-key_name: 
+key_name: # {}
   suffix: "key"
 
 ######################################
 # IAM Instance Profile
 ######################################
-iam_instance_profile: 
-  enabled: true
+# Final key name:
+# ${local.naming_rule}-${suffix}
+# Example: dev-eu-ireland-profile
+iam_instance_profile: # {}
+  suffix: "profile"
 
 ######################################
 # Elastic IP
