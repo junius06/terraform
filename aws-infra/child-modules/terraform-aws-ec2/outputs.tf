@@ -10,6 +10,7 @@ output "instance_ids" {
   }
 }
 
+
 output "instance_names" {
   description = "EC2 instance names"
 

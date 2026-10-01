@@ -24,12 +24,12 @@ module "ec2" {
           instance.network.vpc_name
         ].public_subnet_id[
           "${instance.network.subnet_group}-${instance.zone}"
-        ]
+        ].id
         : module.vpc[
           instance.network.vpc_name
         ].private_subnet_id[
           "${instance.network.subnet_group}-${instance.zone}"
-        ]
+        ].id
       )
 
       security_group_ids = []
