@@ -39,7 +39,7 @@ locals {
   # TAGS
   common_tags = {
     # Project      = var.project
-    Environment  = var.environment
+    ENV  = var.environment
     ManagedBy    = "Terraform"
   }
 }
