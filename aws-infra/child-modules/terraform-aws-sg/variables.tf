@@ -26,7 +26,7 @@ variable "security_groups" {
   description = "Security Groups"
 
   type        = map(object({
-    name        = string
+    sg_name     = string
     description = string
     vpc_id      = string
   }))

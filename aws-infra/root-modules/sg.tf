@@ -7,7 +7,7 @@ module "sg" {
     for key, sg in local.security_groups :
 
     key => {
-      name = sg.name
+      sg_name = sg.sg_name
 
       description = "Security Group for ${sg.sg_name} in VPC ${sg.vpc_name}"
 

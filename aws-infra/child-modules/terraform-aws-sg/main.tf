@@ -4,14 +4,14 @@
 resource "aws_security_group" "this" {
   for_each = var.security_groups
 
-  name        = each.value.name
+  name        = "${var.context.naming_rule}-${each.value.sg_name}-sg"
   description = each.value.description
   vpc_id      = each.value.vpc_id
 
   tags = merge(
     var.common_tags,
     {
-      Name = "${var.context.naming_rule}-${each.value.name}-sg"
+      Name = "${var.context.naming_rule}-${each.value.sg_name}-sg"
     }
   )
 }

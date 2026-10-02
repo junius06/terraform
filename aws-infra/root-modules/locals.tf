@@ -258,3 +258,15 @@ locals {
     }
   }
 }
+
+# 모든 프로토콜 "-1" 사용 금지 검증
+check "sg_protocol_validation" {
+  assert {
+    condition = alltrue([
+      for rule in local.sg_rules_raw :
+      rule.protocol != "-1"
+    ])
+
+    error_message = "Security Group protocol '-1' is not allowed. Specify an explicit protocol such as tcp, udp, or icmp."
+  }
+}
