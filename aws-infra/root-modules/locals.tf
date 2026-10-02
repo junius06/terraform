@@ -27,14 +27,15 @@ locals {
   }
   ipa_user = local.ipa_users[var.environment]
 
+  naming_rule = "${var.project}-${var.environment}-${local.region_name}"
+
   context = {
     project = var.project
     environment = var.environment
     region      = var.region
     region_name = local.region_name
+    naming_rule = local.naming_rule
   }
-
-  naming_rule = "${var.project}-${var.environment}-${local.region_name}"
 
   # TAGS
   common_tags = {
@@ -211,9 +212,11 @@ locals {
 
   sg_common_rules = csvdecode(file(local.sg_common_file))
   
-  sg_environment_rules = fileexists(local.sg_environment_file) ? csvdecode(
-    file(local.sg_environment_file)
-  ) : []
+  sg_environment_rules = (
+    fileexists(local.sg_environment_file) 
+    ? csvdecode(file(local.sg_environment_file))
+    : []
+  )
 
   sg_rules_raw = concat(
     local.sg_common_rules,
@@ -231,27 +234,29 @@ locals {
       sg_name      = rule.sg_name
       type         = rule.type
       protocol     = rule.protocol
-      from_port    = rule.from_port
-      to_port      = rule.to_port
+
+      from_port    = (rule.protocol == "-1" ? null : tonumber(rule.from_port))
+      to_port      = (rule.protocol == "-1" ? null : tonumber(rule.to_port))
+
       source_type  = rule.source_type
       source       = rule.source
       description  = rule.description
     }
   }
 
-  sg_groups_keys = toset([
+  sg_group_keys = toset([
     for rule in local.sg_rules_raw :
     "${rule.vpc_name}/${rule.sg_name}"
   ])
 
   security_groups = {
-    for key in local.sg_groups_keys :
+    for key in local.sg_group_keys :
 
     key => {
       vpc_name = split("/", key)[0]
       sg_name  = split("/", key)[1]
 
-      name = "${local.local.naming_rule}-${split("/", key)[1]}-sg"
+      name = "${local.naming_rule}-${split("/", key)[1]}-sg"
     }
   }
 }

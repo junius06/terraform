@@ -1,3 +1,2 @@
 vpc_name,sg_name,type,protocol,from_port,to_port,source_type,source,description
-main,eks-mgmt,ingress,ssh,22,22,cidr,111.111.111.111/24,SSH From WHERE
 main,eks-mgmt,egress,https,443,443,cidr,0.0.0.0/0,HTTPS To Anywhere

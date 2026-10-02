@@ -11,7 +11,7 @@ resource "aws_security_group" "this" {
   tags = merge(
     var.common_tags,
     {
-      Name = "${var.naming_rule}-${each.value.name}-sg"
+      Name = "${var.context.naming_rule}-${each.value.name}-sg"
     }
   )
 }

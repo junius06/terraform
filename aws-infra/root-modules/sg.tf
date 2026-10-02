@@ -1,6 +1,8 @@
 module "sg" {
   source = "../child-modules/terraform-aws-sg"
 
+  context = local.context
+
   security_groups = {
     for key, sg in local.security_groups :
 

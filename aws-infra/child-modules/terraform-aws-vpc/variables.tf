@@ -9,13 +9,14 @@ variable "context" {
     environment = string
     region_name = string
     region      = string
+    naming_rule = string
   })
 }
 
 variable "common_tags" {
   description = "Common Tags"
-  type    = map(string)
-  default = {}
+  type        = map(string)
+  default     = {}
 }
 
 ######################################

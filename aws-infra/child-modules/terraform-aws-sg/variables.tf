@@ -1,5 +1,16 @@
-variable "naming_rule" {
-  type        = string
+######################################
+# 공통 변수
+######################################
+variable "context" {
+  description = "Common resource context"
+
+  type = object({
+    project     = string
+    environment = string
+    region_name = string
+    region      = string
+    naming_rule = string
+  })
 }
 
 variable "common_tags" {
@@ -8,6 +19,9 @@ variable "common_tags" {
   default = {}
 }
 
+######################################
+# Security Groups
+######################################
 variable "security_groups" {
   description = "Security Groups"
 
