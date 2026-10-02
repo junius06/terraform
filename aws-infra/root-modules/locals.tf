@@ -255,8 +255,6 @@ locals {
     key => {
       vpc_name = split("/", key)[0]
       sg_name  = split("/", key)[1]
-
-      name = "${local.naming_rule}-${split("/", key)[1]}-sg"
     }
   }
 }
