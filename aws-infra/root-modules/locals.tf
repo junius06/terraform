@@ -16,9 +16,9 @@ locals {
     }
   }
 
-  region_name   = local.region_map[var.region].name
-  region_code   = local.region_map[var.region].code
-  region_prefix = local.region_map[var.region].prefix # uw2, ew1 등
+  region_name   = local.region_map[var.region].name   # ireland, oregon
+  region_code   = local.region_map[var.region].code   # ew1, uw2
+  region_prefix = local.region_map[var.region].prefix # eu, us
 
   ipa_users = {
     dev = "fmmsysops.fmm-dev"
@@ -194,5 +194,64 @@ check "ec2_configuration" {
     ])
 
     error_message = "EC2 count must be greater than 0 and at least zone mush be defined."
+  }
+}
+
+
+######################################
+# Security Groups
+######################################
+# CSV파일 읽어서 SG 규칙 정의
+locals {
+  sg_common_file = "${path.module}/sg/common.csv"
+
+  sg_environment_file = (
+    "${path.module}/sg/${var.environment}-${local.region_prefix}.csv"
+  )
+
+  sg_common_rules = csvdecode(file(local.sg_common_file))
+  
+  sg_environment_rules = fileexists(local.sg_environment_file) ? csvdecode(
+    file(local.sg_environment_file)
+  ) : []
+
+  sg_rules_raw = concat(
+    local.sg_common_rules,
+    local.sg_environment_rules
+  )
+}
+
+# CSV 파일에서 읽은 SG 규칙을 Terraform에서 사용할 수 있는 형태로 변환
+locals {
+  sg_rules = {
+    for index, rule in local.sg_rules_raw :
+
+    "${rule.vpc_name}-${rule.sg_name}-${rule.type}-${index + 1}" => {
+      vpc_name     = rule.vpc_name
+      sg_name      = rule.sg_name
+      type         = rule.type
+      protocol     = rule.protocol
+      from_port    = rule.from_port
+      to_port      = rule.to_port
+      source_type  = rule.source_type
+      source       = rule.source
+      description  = rule.description
+    }
+  }
+
+  sg_groups_keys = toset([
+    for rule in local.sg_rules_raw :
+    "${rule.vpc_name}/${rule.sg_name}"
+  ])
+
+  security_groups = {
+    for key in local.sg_groups_keys :
+
+    key => {
+      vpc_name = split("/", key)[0]
+      sg_name  = split("/", key)[1]
+
+      name = "${local.local.naming_rule}-${split("/", key)[1]}-sg"
+    }
   }
 }
