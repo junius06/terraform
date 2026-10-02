@@ -32,7 +32,12 @@ module "ec2" {
         ].id
       )
 
-      security_group_ids = []
+      security_group_ids = [
+        for sg_name in instance.security_groups :
+        module.sg.security_group_ids[
+          "${instance.network.vpc_name}/${sg_name}"
+        ]
+      ]
 
       associate_public_ip_address = (
         instance.associate_public_ip_address

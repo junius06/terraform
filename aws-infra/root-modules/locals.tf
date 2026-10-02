@@ -122,21 +122,21 @@ locals {
           ec2_name = ec2_name
           instance_type = config.instance_type
 
-          monitoring = try(
-            config.monitoring,
-            false
-          )
+          monitoring = try(config.monitoring, false)
 
           #### Network
           network = config.network
-
-          zone = config.network.zones[
-            index % length(config.network.zones)
-          ]
+          zone    = config.network.zones[index % length(config.network.zones)]
 
           associate_public_ip_address = try(
             config.associate_public_ip_address,
             false
+          )
+
+          # # EC2에 연결할 Security Group 목록
+          security_groups = try(
+            config.security_groups,
+            []
           )
 
           #### Key Pair

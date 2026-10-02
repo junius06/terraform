@@ -26,6 +26,9 @@ network:
 
 associate_public_ip_address: false
 
+security_groups:
+  - "eks-mgmt"
+
 ######################################
 # Key Pair
 ######################################
