@@ -141,7 +141,7 @@ locals {
           #### Key Pair
           key_name = (
             try(config.key_name.suffix, null) != null
-            ? "${var.project}-${var.environment}-${local.region_code}-${config.key_name.suffix}"
+            ? "${var.environment}-${var.project}-${local.region_code}-${config.key_name.suffix}"
             : null
           )
 
