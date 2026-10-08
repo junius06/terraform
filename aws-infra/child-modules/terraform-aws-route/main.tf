@@ -10,7 +10,7 @@ resource "aws_route_table" "public" {
   tags = merge(
     var.common_tags,
     {
-      Name = "${local.naming_rule}-${each.key}-pub-rt"
+      Name = "${var.context.naming_rule}-${each.key}-pub-rt"
     }
   )
 }
@@ -23,7 +23,7 @@ resource "aws_route_table" "private" {
   tags = merge(
     var.common_tags,
     {
-      Name = "${local.naming_rule}-${each.value.subnet_name}-pri-${each.value.zone}-rt"
+      Name = "${var.context.naming_rule}-${each.value.subnet_name}-pri-${each.value.zone}-rt"
     }
   )
 }

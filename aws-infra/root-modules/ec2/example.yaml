@@ -45,8 +45,7 @@ key_name: # {}
 # Final key name:
 # ${local.naming_rule}-${suffix}
 # Example: dev-eu-ireland-profile
-iam_instance_profile: # {}
-  suffix: "profile"
+iam_instance_profile: "profile" # {}
 
 ######################################
 # Elastic IP

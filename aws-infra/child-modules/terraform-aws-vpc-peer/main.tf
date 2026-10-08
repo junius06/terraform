@@ -17,7 +17,7 @@ resource "aws_vpc_peering_connection" "this" {
   tags = merge(
     var.common_tags,
     {
-      Name = "${local.naming_rule}-${var.requester_vpc_alias}-from-${var.accepter_vpc_alias}-pcx"
+      Name = "${var.context.naming_rule}-${var.requester_vpc_alias}-from-${var.accepter_vpc_alias}-pcx"
     }
   )
 

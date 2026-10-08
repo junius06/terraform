@@ -10,6 +10,7 @@
 #     region_name = string
 #     region_code = string
 #     region      = string
+#     naming_rule = string
 #   })
 # }
 
@@ -19,6 +20,10 @@ variable "common_tags" {
   default = {}
 }
 
+
+######################################
+# ec2 특정 변수
+######################################
 variable "ipa_user" {
   description = "IPA User"
   type        = string

@@ -1,0 +1,60 @@
+# Role Name:
+# {project}-{environment}-{region_name}-role-{yaml_file_name}
+#
+# Example:
+# fmm-dev-ireland-role-eks-mgmt
+
+######################################
+# IAM Role
+######################################
+# Role을 Assume할 AWS Service
+services:
+  - "<Service Endpoint Prefix>.amazonaws.com"
+  ## Ex.
+  # - "ec2.amazonaws.com"
+  # - "s3.amazonaws.com"
+
+
+######################################
+# Instance Profile
+######################################
+# true:
+#   IAM Role과 함께 EC2용 Instance Profile 생성
+#
+# false:
+#   IAM Role만 생성
+instance_profile:
+  enabled: false
+
+
+######################################
+# AWS Managed Policies
+######################################
+# AWS에서 제공하는 Managed Policy ARN
+aws_managed_policies:
+  - "arn:aws:iam:aws:policy/<service-name>"
+
+
+######################################
+# Customer Managed Policies
+######################################
+policies:
+  example-policy:
+    description: "Example customer managed policy"
+
+    statements:
+      - sid: "ExampleRead"
+        effect: "Allow"
+
+        actions:
+          - "s3:GetObject"
+
+        resources:
+          - "arn:aws:s3:::example-bucket/*"
+
+
+######################################
+# Tags
+######################################
+tags:
+  Role: "Example"

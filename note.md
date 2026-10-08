@@ -64,3 +64,27 @@ child-modules/terraform-aws-ec2
 ## 6. SG
 
 ## 7. IAM
+Role Naming Rule = {project}-{environment}-{region_name}-role-{yaml_file_name}
+Customer Managed Policy Naming Rule = {project}-{environment}-{region_name}-policy-{yaml_file_name}-{policy_name}
+
+IAM YAML
+ ├─ Trust 대상 Service
+ ├─ Instance Profile 생성 여부
+ ├─ AWS Managed Policy
+ ├─ Customer Managed Policy
+ └─ Tags
+
+        ↓ Root
+
+YAML 검색 / Parsing / 정규화
+
+        ↓ Child
+
+IAM Role
+IAM Customer Managed Policy
+Policy Attachment
+Instance Profile
+
+        ↓ Output
+
+EC2에서 Instance Profile 참조

@@ -41,8 +41,7 @@ key_name:
 ######################################
 # IAM Instance Profile
 ######################################
-iam_instance_profile: {}
-  # suffix: "eks-mgmt"
+iam_instance_profile: "eks-mgmt"
 
 ######################################
 # Elastic IP

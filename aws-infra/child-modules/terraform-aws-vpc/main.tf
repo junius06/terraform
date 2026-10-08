@@ -10,7 +10,7 @@ resource "aws_vpc" "this" {
   tags = merge(
     var.common_tags,
     {
-      Name = "${local.naming_rule}-${var.vpc_name}-vpc"
+      Name = "${var.context.naming_rule}-${var.vpc_name}-vpc"
     }
   )
 }
@@ -30,7 +30,7 @@ resource "aws_subnet" "public" {
   tags = merge(
     var.common_tags,
     {
-      Name = "${local.naming_rule}-${each.value.subnet_name}-pub-${each.value.zone}"
+      Name = "${var.context.naming_rule}-${each.value.subnet_name}-pub-${each.value.zone}"
     }
   )
 }
@@ -50,7 +50,7 @@ resource "aws_subnet" "private" {
   tags = merge(
     var.common_tags,
     {
-      Name = "${local.naming_rule}-${each.value.subnet_name}-pri-${each.value.zone}"
+      Name = "${var.context.naming_rule}-${each.value.subnet_name}-pri-${each.value.zone}"
     }
   )
 }
@@ -66,7 +66,7 @@ resource "aws_internet_gateway" "igw" {
   tags = merge(
     var.common_tags,
     {
-      Name = "${local.naming_rule}-${var.vpc_name}-igw"
+      Name = "${var.context.naming_rule}-${var.vpc_name}-igw"
     }
   )
 }
@@ -87,7 +87,7 @@ resource "aws_eip" "nat_eip" {
   tags = merge(
     var.common_tags,
     {
-      Name = "${local.naming_rule}-${var.vpc_name}-nat-eip-${each.value.zone}"
+      Name = "${var.context.naming_rule}-${var.vpc_name}-nat-eip-${each.value.zone}"
     }
   )
 }
@@ -104,7 +104,7 @@ resource "aws_nat_gateway" "nat" {
   tags = merge(
     var.common_tags,
     {
-      Name = "${local.naming_rule}-${var.vpc_name}-nat-${each.value.zone}"
+      Name = "${var.context.naming_rule}-${var.vpc_name}-nat-${each.value.zone}"
     }
   )
 

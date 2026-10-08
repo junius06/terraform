@@ -1,0 +1,312 @@
+# Role: {project}-{environment}-{region_name}-role-eks-aws-load-balancer-controller
+# 참고: https://kubernetes-sigs.github.io/aws-load-balancer-controller/latest/deploy/installation/
+
+services:
+  - pods.eks.amazonaws.com
+
+instance_profile:
+  enabled: false
+
+aws_managed_policies: []
+
+assume_role_actions:
+  - sts:AssumeRole
+  - sts:TagSession
+
+policies:
+  default:
+    description: "AWS Load Balancer Controller IAM policy"
+    statements:
+      ################################
+      # Service-linked role creation
+      ################################
+      - sid: "CreateServiceLinkedRole"
+        effect: Allow
+        actions:
+          - iam:CreateServiceLinkedRole
+        resources:
+          - '*'
+        conditions:
+          - test: StringEquals
+            variable: iam:AWSServiceName
+            values:
+              - elasticloadbalancing.amazonaws.com
+
+      ################################
+      # EC2 / ELB resource discovery
+      ################################
+      - sid: "DescribeEC2AndELBResources"
+        effect: "Allow"
+        actions:
+          - "ec2:DescribeAccountAttributes"
+          - "ec2:DescribeAddresses"
+          - "ec2:DescribeAvailabilityZones"
+          - "ec2:DescribeInternetGateways"
+          - "ec2:DescribeVpcs"
+          - "ec2:DescribeVpcPeeringConnections"
+          - "ec2:DescribeSubnets"
+          - "ec2:DescribeSecurityGroups"
+          - "ec2:DescribeInstances"
+          - "ec2:DescribeNetworkInterfaces"
+          - "ec2:DescribeTags"
+          - "ec2:GetCoipPoolUsage"
+          - "ec2:DescribeCoipPools"
+          - "ec2:GetSecurityGroupsForVpc"
+          - "ec2:DescribeIpamPools"
+          - "ec2:DescribeRouteTables"
+          - "elasticloadbalancing:DescribeLoadBalancers"
+          - "elasticloadbalancing:DescribeLoadBalancerAttributes"
+          - "elasticloadbalancing:DescribeListeners"
+          - "elasticloadbalancing:DescribeListenerCertificates"
+          - "elasticloadbalancing:DescribeSSLPolicies"
+          - "elasticloadbalancing:DescribeRules"
+          - "elasticloadbalancing:DescribeTargetGroups"
+          - "elasticloadbalancing:DescribeTargetGroupAttributes"
+          - "elasticloadbalancing:DescribeTargetHealth"
+          - "elasticloadbalancing:DescribeTags"
+          - "elasticloadbalancing:DescribeTrustStores"
+          - "elasticloadbalancing:DescribeListenerAttributes"
+          - "elasticloadbalancing:DescribeCapacityReservation"
+        resources:
+          - "*"
+
+      ################################
+      # ACM / WAF / Shield / Cognito lookups and operations
+      ################################
+      - sid: "ReadCertificatesAndSecurityServices"
+        effect: "Allow"
+        actions:
+          - "cognito-idp:DescribeUserPoolClient"
+          - "acm:ListCertificates"
+          - "acm:DescribeCertificate"
+          - "iam:ListServerCertificates"
+          - "iam:GetServerCertificate"
+          - "waf-regional:GetWebACL"
+          - "waf-regional:GetWebACLForResource"
+          - "waf-regional:AssociateWebACL"
+          - "waf-regional:DisassociateWebACL"
+          - "wafv2:GetWebACL"
+          - "wafv2:GetWebACLForResource"
+          - "wafv2:AssociateWebACL"
+          - "wafv2:DisassociateWebACL"
+          - "shield:GetSubscriptionState"
+          - "shield:DescribeProtection"
+          - "shield:CreateProtection"
+          - "shield:DeleteProtection"
+        resources:
+          - "*"
+
+      ################################
+      # Security group ingress permissions
+      ################################
+      - sid: "AuthorizeSecurityGroupIngress"
+        effect: "Allow"
+        actions:
+          - "ec2:AuthorizeSecurityGroupIngress"
+          - "ec2:RevokeSecurityGroupIngress"
+        resources:
+          - "*"
+
+      ################################
+      # Security group creation
+      ################################
+      - sid: "CreateSecurityGroup"
+        effect: "Allow"
+        actions:
+          - "ec2:CreateSecurityGroup"
+        resources:
+          - "*"
+
+      ################################
+      # Tag security groups during creation
+      ################################
+      - sid: "TagSecurityGroupOnCreate"
+        effect: "Allow"
+        actions:
+          - "ec2:CreateTags"
+        resources:
+          - "arn:aws:ec2:*:*:security-group/*"
+        conditions:
+          - test: "StringEquals"
+            variable: "ec2:CreateAction"
+            values:
+              - "CreateSecurityGroup"
+          - test: "Null"
+            variable: "aws:RequestTag/elbv2.k8s.aws/cluster"
+            values:
+              - "false"
+
+      ################################
+      # Manage security group tags
+      ################################
+      - sid: "ManageSecurityGroupTags"
+        effect: "Allow"
+        actions:
+          - "ec2:CreateTags"
+          - "ec2:DeleteTags"
+        resources:
+          - "arn:aws:ec2:*:*:security-group/*"
+        conditions:
+          - test: "Null"
+            variable: "aws:RequestTag/elbv2.k8s.aws/cluster"
+            values:
+              - "true"
+          - test: "Null"
+            variable: "aws:ResourceTag/elbv2.k8s.aws/cluster"
+            values:
+              - "false"
+
+      ################################
+      # Manage cluster-owned security groups
+      ################################
+      - sid: "ManageClusterSecurityGroups"
+        effect: "Allow"
+        actions:
+          - "ec2:AuthorizeSecurityGroupIngress"
+          - "ec2:RevokeSecurityGroupIngress"
+          - "ec2:DeleteSecurityGroup"
+        resources:
+          - "*"
+        conditions:
+          - test: "Null"
+            variable: "aws:ResourceTag/elbv2.k8s.aws/cluster"
+            values:
+              - "false"
+
+      ################################
+      # Create load balancers and target groups
+      ################################
+      - sid: "CreateLoadBalancerAndTargetGroup"
+        effect: "Allow"
+        actions:
+          - "elasticloadbalancing:CreateLoadBalancer"
+          - "elasticloadbalancing:CreateTargetGroup"
+        resources:
+          - "*"
+        conditions:
+          - test: "Null"
+            variable: "aws:RequestTag/elbv2.k8s.aws/cluster"
+            values:
+              - "false"
+
+      ################################
+      # Create and delete listeners and rules
+      ################################
+      - sid: "ManageListenersAndRules"
+        effect: "Allow"
+        actions:
+          - "elasticloadbalancing:CreateListener"
+          - "elasticloadbalancing:DeleteListener"
+          - "elasticloadbalancing:CreateRule"
+          - "elasticloadbalancing:DeleteRule"
+        resources:
+          - "*"
+
+      ################################
+      # Manage load balancer / target group tags
+      ################################
+      - sid: "ManageLoadBalancerAndTargetGroupTags"
+        effect: "Allow"
+        actions:
+          - "elasticloadbalancing:AddTags"
+          - "elasticloadbalancing:RemoveTags"
+        resources:
+          - "arn:aws:elasticloadbalancing:*:*:targetgroup/*/*"
+          - "arn:aws:elasticloadbalancing:*:*:loadbalancer/net/*/*"
+          - "arn:aws:elasticloadbalancing:*:*:loadbalancer/app/*/*"
+        conditions:
+          - test: "Null"
+            variable: "aws:RequestTag/elbv2.k8s.aws/cluster"
+            values:
+              - "true"
+          - test: "Null"
+            variable: "aws:ResourceTag/elbv2.k8s.aws/cluster"
+            values:
+              - "false"
+
+      ################################
+      # Manage listener and rule tags
+      ################################
+      - sid: "ManageListenerAndRuleTags"
+        effect: "Allow"
+        actions:
+          - "elasticloadbalancing:AddTags"
+          - "elasticloadbalancing:RemoveTags"
+        resources:
+          - "arn:aws:elasticloadbalancing:*:*:listener/net/*/*/*"
+          - "arn:aws:elasticloadbalancing:*:*:listener/app/*/*/*"
+          - "arn:aws:elasticloadbalancing:*:*:listener-rule/net/*/*/*"
+          - "arn:aws:elasticloadbalancing:*:*:listener-rule/app/*/*/*"
+
+      ################################
+      # Modify / delete load balancer resources
+      ################################
+      - sid: "ModifyLoadBalancerResources"
+        effect: "Allow"
+        actions:
+          - "elasticloadbalancing:ModifyLoadBalancerAttributes"
+          - "elasticloadbalancing:SetIpAddressType"
+          - "elasticloadbalancing:SetSecurityGroups"
+          - "elasticloadbalancing:SetSubnets"
+          - "elasticloadbalancing:DeleteLoadBalancer"
+          - "elasticloadbalancing:ModifyTargetGroup"
+          - "elasticloadbalancing:ModifyTargetGroupAttributes"
+          - "elasticloadbalancing:DeleteTargetGroup"
+          - "elasticloadbalancing:ModifyListenerAttributes"
+          - "elasticloadbalancing:ModifyCapacityReservation"
+          - "elasticloadbalancing:ModifyIpPools"
+        resources:
+          - "*"
+        conditions:
+          - test: "Null"
+            variable: "aws:ResourceTag/elbv2.k8s.aws/cluster"
+            values:
+              - "false"
+
+      ################################
+      # Tag load balancers during creation
+      ################################
+      - sid: "TagLoadBalancerOnCreate"
+        effect: "Allow"
+        actions:
+          - "elasticloadbalancing:AddTags"
+        resources:
+          - "arn:aws:elasticloadbalancing:*:*:targetgroup/*/*"
+          - "arn:aws:elasticloadbalancing:*:*:loadbalancer/net/*/*"
+          - "arn:aws:elasticloadbalancing:*:*:loadbalancer/app/*/*"
+        conditions:
+          - test: "StringEquals"
+            variable: "elasticloadbalancing:CreateAction"
+            values:
+              - "CreateTargetGroup"
+              - "CreateLoadBalancer"
+          - test: "Null"
+            variable: "aws:RequestTag/elbv2.k8s.aws/cluster"
+            values:
+              - "false"
+
+      ################################
+      # Register and deregister targets
+      ################################
+      - sid: "RegisterAndDeregisterTargets"
+        effect: "Allow"
+        actions:
+          - "elasticloadbalancing:RegisterTargets"
+          - "elasticloadbalancing:DeregisterTargets"
+        resources:
+          - "arn:aws:elasticloadbalancing:*:*:targetgroup/*/*"
+
+      ################################
+      # Modify listeners, rules, and Web ACL
+      ################################
+      - sid: "ModifyListenersAndWebACL"
+        effect: "Allow"
+        actions:
+          - "elasticloadbalancing:SetWebAcl"
+          - "elasticloadbalancing:ModifyListener"
+          - "elasticloadbalancing:AddListenerCertificates"
+          - "elasticloadbalancing:RemoveListenerCertificates"
+          - "elasticloadbalancing:ModifyRule"
+          - "elasticloadbalancing:SetRulePriorities"
+        resources:
+          - "*"

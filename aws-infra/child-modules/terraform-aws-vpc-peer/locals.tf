@@ -1,8 +1,4 @@
 locals {
-  naming_rule = "${var.context.project}-${var.context.environment}-${var.context.region_name}"
-}
-
-locals {
   accepter_region = coalesce(
     var.accepter_region,
     var.context.region

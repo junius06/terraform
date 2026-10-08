@@ -1,0 +1,62 @@
+# Role: {project}-{environment}-{region_name}-role-eks-mgmt-ec2
+
+services:
+  - ec2.amazonaws.com
+
+instance_profile:
+  enabled: true
+
+aws_managed_policies:
+  - "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser"
+
+policies:
+  eks-management:
+    description: "EKS management policy"
+    statements:
+      ################################
+      # EKS General
+      ################################
+      - sid: "VisualEditor0"
+        effect: "Allow"
+        actions:
+          - "eks:ListEksAnywhereSubscriptions"
+          - "eks:DescribeAddonConfiguration"
+          - "eks:CreateEksAnywhereSubscription"
+          - "eks:ListAccessPolicies"
+          - "eks:ListClusters"
+          - "eks:DescribeAddonVersions"
+          - "eks:RegisterCluster"
+          - "eks:CreateCluster"
+        resources:
+          - "*"
+
+      ################################
+      # EKS Resources
+      ################################
+      - sid: "VisualEditor1"
+        effect: "Allow"
+        actions:
+          - "eks:*"
+        resources:
+          - "arn:aws:eks:{REGION}:{ACCOUNT_ID}:eks-anywhere-subscription/*"
+          - "arn:aws:eks:{REGION}:{ACCOUNT_ID}:podidentityassociation/*/*"
+          - "arn:aws:eks:{REGION}:{ACCOUNT_ID}:fargateprofile/*/*/*"
+          - "arn:aws:eks:{REGION}:{ACCOUNT_ID}:identityproviderconfig/*/*/*/*"
+          - "arn:aws:eks:{REGION}:{ACCOUNT_ID}:cluster/*"
+          - "arn:aws:eks:{REGION}:{ACCOUNT_ID}:access-entry/*/*/*/*/*"
+          - "arn:aws:eks:{REGION}:{ACCOUNT_ID}:nodegroup/*/*/*"
+          - "arn:aws:eks:{REGION}:{ACCOUNT_ID}:addon/*/*/*"
+
+      ################################
+      # Pricing / Spot
+      ################################
+      - sid: "AllowEksNodeViewerPricing"
+        effect: "Allow"
+        actions:
+          - "pricing:GetProducts"
+          - "ec2:DescribeSpotPriceHistory"
+        resources:
+          - "*"
+
+tags:
+  Role: "EKS Management"

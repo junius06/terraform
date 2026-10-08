@@ -2,13 +2,13 @@
 # Bucket
 ######################################
 resource "aws_s3_bucket" "this" {
-  bucket = "${local.naming_rule}-${var.bucket_name}"
+  bucket = "${var.context.naming_rule}-${var.bucket_name}"
   force_destroy = var.force_destroy.enabled
 
   tags = merge(
     var.common_tags,
     {
-      Name              = "${local.naming_rule}-${var.bucket_name}",
+      Name              = "${var.context.naming_rule}-${var.bucket_name}",
       SEC_ASSETS_PII    = "N", # 필수 태깅
       SEC_ASSETS_PUBLIC = "N"  # 필수 태깅
     },

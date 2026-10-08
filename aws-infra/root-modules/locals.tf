@@ -40,7 +40,7 @@ locals {
   # TAGS
   common_tags = {
     # Project      = var.project
-    ENV  = var.environment
+    ENV          = var.environment
     ManagedBy    = "Terraform"
   }
 }
@@ -140,10 +140,9 @@ locals {
           )
 
           #### Key Pair
-          key_name = (
-            try(config.key_name.suffix, null) != null
-            ? "${var.environment}-${var.project}-${local.region_code}-${config.key_name.suffix}"
-            : null
+          key_name = try(
+            config.iam_instance_profile,
+            null
           )
 
           #### IAM Instance Profile
@@ -270,3 +269,87 @@ check "sg_protocol_validation" {
     error_message = "Security Group protocol '-1' is not allowed. Specify an explicit protocol such as tcp, udp, or icmp."
   }
 }
+
+
+######################################
+# IAM
+######################################
+# IAM 파일 조회
+locals {
+  iam_files = [
+    for file_name in fileset ("${path.module}/iam", "*.yaml")
+    : file_name
+    if file_name != "example.yaml"
+  ]
+}
+
+# YAML Decode
+locals {
+  iam_definitions = {
+    for file_name in local.iam_files :
+    
+    trimsuffix(file_name, ".yaml") => yamldecode(
+      replace(
+        replace(
+          file("${path.module}/iam/${file_name}"),
+          "{ACCOUNT_ID}",
+          data.aws_caller_identity.current.account_id
+        ),
+        "{REGION}",
+        var.region
+      )
+    )
+  }
+}
+
+# IAM Role 정규화
+locals {
+  iam_roles = {
+    for role_name, config in local.iam_definitions :
+
+    role_name => {
+      # role_name = YAML 파일명
+      # config    = YAML 내용
+
+      role_name = role_name
+
+      services = try(
+        config.services,
+        []
+      )
+
+      instance_profile_enabled = try(
+        config.instance_profile.enabled,
+        false
+      )
+
+      aws_managed_policies = try(
+        config.aws_managed_policies,
+        []
+      )
+
+      policies = {
+        for policy_name, policy in try(config.policies, {}) :
+
+        policy_name => {
+          description = try(policy.description, null)
+
+          statements = [
+            for statement in policy.statements : {
+              sid       = try(statement.sid, null)
+              effect    = statement.effect
+              actions   = statement.actions
+              resources = statement.resources
+            }
+          ]
+        }
+      }
+
+      tags = try(
+        config.tags,
+        {}
+      )
+    }
+  }
+}
+

@@ -1,8 +1,4 @@
 locals {
-  naming_rule = "${var.context.project}-${var.context.environment}-${var.context.region_name}"
-}
-
-locals {
   # block_all_public_access.enabled = true
   # → 모든 Public Access Block 설정을 true로 강제
   #

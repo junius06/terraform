@@ -10,7 +10,7 @@ Parameters:
   Project:
     Type: String
     Default: fmm
-  Env:
+  ENV:
     Type: String
     Default: dev
     AllowedValues:
@@ -51,7 +51,7 @@ Metadata:
           default: "General Configuration"
         Parameters:
           - Project
-          - Env
+          - ENV
 
       - Label:
           default: "Network Configuration"
@@ -76,7 +76,7 @@ Metadata:
       Project:
         default: "Project"
 
-      Env:
+      ENV:
         default: "Environment"
 
       VpcCidr:

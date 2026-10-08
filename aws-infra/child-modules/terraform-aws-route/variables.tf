@@ -9,6 +9,7 @@ variable "context" {
     environment = string
     region_name = string
     region      = string
+    naming_rule = string
   })
 }
 
