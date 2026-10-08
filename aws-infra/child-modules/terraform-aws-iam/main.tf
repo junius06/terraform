@@ -89,7 +89,7 @@ resource "aws_iam_instance_profile" "this" {
 
   tags = merge(
     var.common_tags,
-    each.value.tags
+    each.value.tags,
     {
       Name = "${var.context.naming_rule}-profile-${each.key}"
     }
