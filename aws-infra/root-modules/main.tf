@@ -264,10 +264,9 @@ module "sg" {
 module "iam" {
   source = "../child-modules/terraform-aws-iam"
 
-  context = local.context
-
   roles = local.iam_roles
 
+  context = local.context
   common_tags = local.common_tags
 }
 
@@ -275,13 +274,14 @@ module "iam" {
 ######################################
 # EKS
 ######################################
+module "eks" {
+  source = "../child-modules/terraform-aws-eks"
 
+  clusters = local.eks_clusters
 
-
-
-
-
-
+  context = local.context
+  common_tags = local.common_tags
+}
 
 
 ######################################

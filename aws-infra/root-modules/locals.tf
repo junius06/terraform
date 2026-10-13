@@ -353,3 +353,171 @@ locals {
   }
 }
 
+
+######################################
+# EKS Cluster
+######################################
+# eks yaml files
+locals {
+  eks_cluster_files = [
+    for file_name in fileset("${path.module}/eks/cluster", "*.yaml") :
+    file_name
+    if file_name != "example.yaml"
+  ]
+
+  eks_node_group_files = [
+    for file_name in fileset("${path.module}/eks/node_groups", "*.yaml") :
+    file_name
+    if file_name != "example.yaml"
+  ]
+}
+
+# EKS YAML Definitions
+locals {
+  eks_cluster_definitions = {
+    for file_name in local.eks_cluster_files :
+    trimsuffix(file_name, ".yaml") => yamldecode(
+      file("${path.module}/eks/cluster/${file_name}")
+    )
+  }
+
+  eks_node_group_definitions = {
+    for file_name in local.eks_node_group_files :
+    trimsuffix(file_name, ".yaml") => yamldecode(
+      file("${path.module}/eks/node_groups/${file_name}")
+    )
+  }
+}
+
+# EKS Cluster / Node Group Mapping
+locals {
+  eks_definitions = {
+    for cluster_key, cluster in local.eks_cluster_definitions :
+    cluster_key => merge(
+      cluster,
+      {
+        node_groups = {
+          for node_group_key in try(cluster.node_groups, []) :
+          node_group_key => local.eks_node_group_definitions[node_group_key]
+        }
+      }
+    )
+  }
+}
+
+# EKS Cluster Configuration
+locals {
+  eks_clusters = {
+    for cluster_key, cluster in local.eks_definitions :
+    cluster_key => {
+      # Cluster
+      role_arn = module.iam.role_arn[cluster.iam_role]
+      version  = cluster.version
+
+      subnet_ids = flatten([
+        for subnet_group in cluster.subnet_groups :
+        module.vpc.private_subnet_ids[cluster.vpc][subnet_group]
+      ])
+
+      security_group_ids = [
+        for sg_key in try(cluster.security_groups, []) :
+        module.sg.security_group_ids[sg_key]
+      ]
+
+      endpoint_private_access = try(
+        cluster.endpoint_private_access,
+        true
+      )
+
+      endpoint_public_access = try(
+        cluster.endpoint_public_access,
+        false
+      )
+
+      public_access_cidrs = try(
+        cluster.public_access_cidrs,
+        []
+      )
+
+      enabled_cluster_log_types = try(
+        cluster.enabled_cluster_log_types,
+        [
+          "api",
+          "audit",
+          "authenticator",
+          "controllerManager",
+          "scheduler"
+        ]
+      )
+
+      authentication_mode = try(
+        cluster.authentication_mode,
+        "API_AND_CONFIG_MAP"
+      )
+
+      bootstrap_cluster_creator_admin_permissions = try(
+        lcuster.bootstrap_cluster_creator_admin_permissions,
+        false
+      )
+
+      deletion_protection = try(
+        cluster.deletion_protection,
+        true
+      )
+
+      tags = try(cluster.tags, {})
+
+      # Managed Node Groups
+      node_groups = {
+        for node_group_key, node_group in cluster.node_groups :
+        node_group_key => {
+          node_role_arn = module.iam.role_arns[node_group.iam_role]
+
+          subnet_ids = flatten([
+            for subnet_group in node_group.subnet_groups :
+            module.vpc.private_subnet_ids[cluster.vpc][subnet_group]
+          ])
+
+          instance_types = try(
+            node_group.instance_types,
+            ["m7g.large"]
+          )
+
+          ami_type = try(
+            node_group.ami_type,
+            "AL2023_ARM_64_STANDARD"
+          )
+
+          capacity_type = try(
+            node_gruop.capacity_type,
+            "ON_DEMAND"
+          )
+
+          disk_size = try(
+            node_group.disk_size,
+            50
+          )
+
+          scaling = node_group.scaling
+
+          max_unavailable = try(
+            node_group.max_unavailable,
+            1
+          )
+
+          labels = try(
+            node_group.labels,
+            {}
+          )
+
+          taints = try(
+            node_group.taints,
+            []
+          )
+
+          tags = try(node_group.tags, {})
+        }
+      }
+    }
+  }
+}
