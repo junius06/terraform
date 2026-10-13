@@ -411,7 +411,7 @@ locals {
     for cluster_key, cluster in local.eks_definitions :
     cluster_key => {
       # Cluster
-      role_arn = module.iam.role_arn[cluster.iam_role]
+      role_arn = module.iam.role_arns[cluster.iam_role]
       version  = cluster.version
 
       subnet_ids = flatten([
@@ -456,7 +456,7 @@ locals {
       )
 
       bootstrap_cluster_creator_admin_permissions = try(
-        lcuster.bootstrap_cluster_creator_admin_permissions,
+        cluster.bootstrap_cluster_creator_admin_permissions,
         false
       )
 
@@ -471,6 +471,7 @@ locals {
       node_groups = {
         for node_group_key, node_group in cluster.node_groups :
         node_group_key => {
+
           node_role_arn = module.iam.role_arns[node_group.iam_role]
 
           subnet_ids = flatten([
@@ -489,7 +490,7 @@ locals {
           )
 
           capacity_type = try(
-            node_gruop.capacity_type,
+            node_group.capacity_type,
             "ON_DEMAND"
           )
 
