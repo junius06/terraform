@@ -1,4 +1,5 @@
-# Role: {project}-{environment}-{region_name}-role-eks-mgmt-ec2
+# Role Name:
+# {project}-{environment}-{region_name}-eks-mgmt-ec2-role
 
 services:
   - ec2.amazonaws.com
@@ -9,7 +10,9 @@ instance_profile:
 aws_managed_policies:
   - "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser"
 
-policies:
+custom_policies:
+  # Policy Name:
+  # {project}-{environment}-{region_name}-eks-mgmt-ec2-pol
   eks-management:
     description: "EKS management policy"
     statements:

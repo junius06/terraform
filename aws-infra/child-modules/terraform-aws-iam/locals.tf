@@ -42,6 +42,24 @@ locals {
 
 
 ######################################
+# Customer Managed Policy Names
+######################################
+locals {
+  customer_managed_policy_names = {
+    for key, policy in local.customer_managed_policies :
+    key => (
+      length([
+        for p in values(local.customer_managed_policies) :
+        p if p.role_key == policy.role_key
+      ]) == 1
+      ? "${var.context.naming_rule}-${policy.role_key}-pol"
+      : "${var.context.naming_rule}-${policy.role_key}-${policy.policy_name}-pol"
+    )
+  }
+}
+
+
+######################################
 # Instance Profiles
 ######################################
 locals {

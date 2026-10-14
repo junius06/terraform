@@ -1,0 +1,23 @@
+# Role Name:
+# {project}-{environment}-{region_name}-role-eks-worker
+
+services:
+  - "ec2.amazonaws.com"
+
+assume_role_actions:
+  - "sts:AssumeRole"
+
+instance_profile:
+  enabled: false
+
+# 참고 : Karpenter에 필요 권한 - https://karpenter.sh/docs/reference/cloudformation/
+aws_managed_policies:
+  - "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+  - "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+  - "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPullOnly"
+  - "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+
+custom_policies: {}
+
+tags:
+  Role: "Example"

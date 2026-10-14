@@ -4,7 +4,7 @@
 resource "aws_iam_role" "this" {
   for_each = var.roles
 
-  name = "${var.context.naming_rule}-role-${each.key}"
+  name = "${var.context.naming_rule}-${each.key}-role"
 
   assume_role_policy = (
     data.aws_iam_policy_document.assume_role[
@@ -16,7 +16,7 @@ resource "aws_iam_role" "this" {
     var.common_tags,
     each.value.tags,
     {
-      Name = "${var.context.naming_rule}-role-${each.key}"
+      Name = "${var.context.naming_rule}-${each.key}-role"
     }
   )
 }
@@ -28,7 +28,7 @@ resource "aws_iam_role" "this" {
 resource "aws_iam_policy" "this" {
   for_each = local.customer_managed_policies
 
-  name = ("${var.context.naming_rule}-policy-${each.value.role_key}-${each.value.policy_name}")
+  name = local.customer_managed_policy_names[each.key]
 
   description = each.value.description
 
@@ -39,7 +39,7 @@ resource "aws_iam_policy" "this" {
   tags = merge(
     var.common_tags,
     {
-      Name = "${var.context.naming_rule}-policy-${each.value.role_key}-${each.value.policy_name}"
+      Name = local.customer_managed_policy_names[each.key]
     }
   )
 }
@@ -81,7 +81,7 @@ resource "aws_iam_role_policy_attachment" "customer_managed" {
 resource "aws_iam_instance_profile" "this" {
   for_each = local.instance_profiles
 
-  name = "${var.context.naming_rule}-profile-${each.key}"
+  name = "${var.context.naming_rule}-${each.key}-profile"
 
   role = aws_iam_role.this[
     each.key
@@ -91,7 +91,7 @@ resource "aws_iam_instance_profile" "this" {
     var.common_tags,
     each.value.tags,
     {
-      Name = "${var.context.naming_rule}-profile-${each.key}"
+      Name = "${var.context.naming_rule}-${each.key}-profile"
     }
   )
 }

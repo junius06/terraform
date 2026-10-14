@@ -1,0 +1,20 @@
+# Role Name:
+# {project}-{environment}-{region_name}-eks-ebs-csi-driver-role
+
+services:
+  - "pods.eks.amazonaws.com"
+
+assume_role_actions:
+  - "sts:AssumeRole"
+  - "sts:TagSession"
+
+instance_profile:
+  enabled: false
+
+aws_managed_policies:
+  - "arn:aws:iam::aws:policy/AmazonEBSCSIDriverPolicy"
+
+custom_policies: {}
+
+tags:
+  Role: "EKS EBS CSI Driver"

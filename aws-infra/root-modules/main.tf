@@ -245,8 +245,8 @@ module "sg" {
 
       cidr_ipv4   = rule.source_type == "cidr" ? rule.source : null
 
-    #   source_type = rule.source_type
-    #   source      = rule.source
+      # source_type = rule.source_type
+      # source      = rule.source
     
       description = rule.description
 
@@ -277,7 +277,7 @@ module "iam" {
 module "eks" {
   source = "../child-modules/terraform-aws-eks"
 
-  clusters = local.eks_clusters
+  cluster = local.eks_clusters
 
   context = local.context
   common_tags = local.common_tags

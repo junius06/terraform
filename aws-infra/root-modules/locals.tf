@@ -305,31 +305,34 @@ locals {
 # IAM Role 정규화
 locals {
   iam_roles = {
+    # role_name = YAML 파일명
+    # config    = YAML 내용
     for role_name, config in local.iam_definitions :
 
     role_name => {
-      # role_name = YAML 파일명
-      # config    = YAML 내용
-
       role_name = role_name
 
+      # Assume Role
       services = try(
         config.services,
         []
       )
 
+      # Instance Profile
       instance_profile_enabled = try(
         config.instance_profile.enabled,
         false
       )
 
+      # AWS Managed Policies
       aws_managed_policies = try(
         config.aws_managed_policies,
         []
       )
-
-      policies = {
-        for policy_name, policy in try(config.policies, {}) :
+      
+      # Customer Managed Policies
+      custom_policies = {
+        for policy_name, policy in try(config.custom_policies, {}) :
 
         policy_name => {
           description = try(policy.description, null)
@@ -340,6 +343,14 @@ locals {
               effect    = statement.effect
               actions   = statement.actions
               resources = statement.resources
+
+              # conditions = [
+              #   for condition in try(statement.conditions, []) : {
+              #     test     = condition.test
+              #     variable = condition.variable
+              #     values   = condition.values
+              #   }
+              # ]
             }
           ]
         }

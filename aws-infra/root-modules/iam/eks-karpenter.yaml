@@ -1,0 +1,277 @@
+# # Role Name:
+# # {project}-{environment}-{region_name}-eks-karpenter-role
+
+# services:
+#   - "pods.eks.amazonaws.com"
+
+# assume_role_actions:
+#   - "sts:AssumeRole"
+#   - "sts:TagSession"
+
+# instance_profile:
+#   enabled: false
+
+# aws_managed_policies: []
+
+# custom_policies:
+#   example-policy:
+#     description: "IAM policy for EKS Karpenter Controller"
+
+#     statements:
+#       ######################################
+#       # Karpenter EC2 / IAM Management
+#       ######################################
+#       # EC2 인스턴스 생성, 종료 및 조회
+#       # Launch Template, Instance Profile 관리
+#       # AMI, Subnet, Security Group 및 가격 정보 조회
+#       - sid: "Karpenter"
+#         effect: "Allow"
+#         actions:
+#           - "ec2:DescribeImages"
+#           - "ec2:DescribeInstances"
+#           - "ec2:DescribeInstanceTypes"
+#           - "ec2:DescribeInstanceTypeOfferings"
+#           - "ec2:DescribeSubnets"
+#           - "ec2:DescribeSecurityGroups"
+#           - "ec2:DescribeLaunchTemplates"
+#           - "ec2:DescribeAvailabilityZones"
+#           - "ec2:DescribeSpotPriceHistory"
+#           - "ec2:DescribeCapacityReservations"
+#           # - "ec2:RunInstances"
+#           # - "ec2:DeleteLaunchTemplate"
+#           # - "ec2:TerminateInstances"
+#           # - "ec2:CreateTags"
+#           # - "ec2:CreateLaunchTemplate"
+#           # - "ec2:CreateFleet"
+#           # - "pricing:GetProducts"
+#           # - "ssm:GetParameter"
+#           # - "iam:ListInstanceProfiles"
+#           # - "iam:GetInstanceProfile"
+#           # - "iam:CreateInstanceProfile"
+#           # - "iam:TagInstanceProfile"
+#           # - "iam:AddRoleToInstanceProfile"
+#           # - "iam:RemoveRoleFromInstanceProfile"
+#           # - "iam:DeleteInstanceProfile"
+#           # - "iam:PassRole"
+#         resources:
+#           - "*"
+#         conditions:
+#           - test: "StringEquals"
+#             variable: "aws:RequestedRegion"
+#             values:
+#               - "{REGION}"
+
+#       ######################################
+#       # Pricing Read Only
+#       ######################################
+#       - sid: "AllowPricingRead"
+#         effect: "Allow"
+#         actions:
+#           - "pricing:GetProducts"
+#         resources:
+#           - "*"
+
+#       ######################################
+#       # SSM Public AMI Parameters
+#       ######################################
+#       - sid: "AllowSSMParameterRead"
+#         effect: "Allow"
+#         actions:
+#           - "ssm:GetParameter"
+#         resources:
+#           - "arn:aws:ssm:{REGION}::parameter/aws/service/*"
+
+#       ######################################
+#       # EC2 RunInstances / CreateFleet
+#       # Existing infrastructure resources
+#       ######################################
+#       - sid: "AllowScopedEC2InstanceAccess"
+#         effect: "Allow"
+#         actions:
+#           - "ec2:RunInstances"
+#           - "ec2:CreateFleet"
+#         resources:
+#           - "arn:aws:ec2:{REGION}::image/*"
+#           - "arn:aws:ec2:{REGION}::snapshot/*"
+#           - "arn:aws:ec2:{REGION}:{ACCOUNT_ID}:subnet/*"
+#           - "arn:aws:ec2:{REGION}:{ACCOUNT_ID}:security-group/*"
+#           - "arn:aws:ec2:{REGION}:{ACCOUNT_ID}:launch-template/*"
+#           - "arn:aws:ec2:{REGION}:{ACCOUNT_ID}:capacity-reservation/*"
+
+#       ######################################
+#       # EC2 RunInstances / CreateFleet
+#       # New resources with cluster tags
+#       ######################################
+#       - sid: "AllowScopedEC2InstanceCreation"
+#         effect: "Allow"
+#         actions:
+#           - "ec2:RunInstances"
+#           - "ec2:CreateFleet"
+#         resources:
+#           - "arn:aws:ec2:{REGION}:{ACCOUNT_ID}:instance/*"
+#           - "arn:aws:ec2:{REGION}:{ACCOUNT_ID}:volume/*"
+#           - "arn:aws:ec2:{REGION}:{ACCOUNT_ID}:network-interface/*"
+#           - "arn:aws:ec2:{REGION}:{ACCOUNT_ID}:spot-instances-request/*"
+#           - "arn:aws:ec2:{REGION}:{ACCOUNT_ID}:fleet/*"
+#         conditions:
+#           - test: "StringEquals"
+#             variable: "aws:RequestTag/kubernetes.io/cluster/fmm-dev-ireland-workload-eks"
+#             values:
+#               - "owned"
+#           - test: "StringLike"
+#             variable: "aws:RequestTag/karpenter.sh/nodepool"
+#             values:
+#               - "*"
+
+#       ######################################
+#       # EC2 CreateTags During Creation
+#       ######################################
+#       - sid: "AllowScopedEC2CreateTags"
+#         effect: "Allow"
+#         actions:
+#           - "ec2:CreateTags"
+#         resources:
+#           - "arn:aws:ec2:{REGION}:{ACCOUNT_ID}:instance/*"
+#           - "arn:aws:ec2:{REGION}:{ACCOUNT_ID}:volume/*"
+#           - "arn:aws:ec2:{REGION}:{ACCOUNT_ID}:network-interface/*"
+#           - "arn:aws:ec2:{REGION}:{ACCOUNT_ID}:spot-instances-request/*"
+#           - "arn:aws:ec2:{REGION}:{ACCOUNT_ID}:fleet/*"
+#         conditions:
+#           - test: "StringEquals"
+#             variable: "ec2:CreateAction"
+#             values:
+#               - "RunInstances"
+#               - "CreateFleet"
+#           - test: "StringEquals"
+#             variable: "aws:RequestTag/kubernetes.io/cluster/fmm-dev-ireland-workload-eks"
+#             values:
+#               - "owned"
+
+#       ######################################
+#       # EC2 Termination
+#       ######################################
+#       - sid: "AllowScopedEC2Termination"
+#         effect: "Allow"
+#         actions:
+#           - "ec2:TerminateInstances"
+#         resources:
+#           - "arn:aws:ec2:{REGION}:{ACCOUNT_ID}:instance/*"
+#         conditions:
+#           - test: "StringEquals"
+#             variable: "aws:ResourceTag/kubernetes.io/cluster/fmm-dev-ireland-workload-eks"
+#             values:
+#               - "owned"
+#           - test: "StringLike"
+#             variable: "aws:ResourceTag/karpenter.sh/nodepool"
+#             values:
+#               - "*"
+
+#       ######################################
+#       # IAM PassRole
+#       ######################################
+#       # 실제 Karpenter Node Role 이름으로 교체
+#       - sid: "AllowScopedPassRole"
+#         effect: "Allow"
+#         actions:
+#           - "iam:PassRole"
+#         resources:
+#           - "arn:aws:iam::{ACCOUNT_ID}:role/fmm-dev-ireland-role-eks-node-workload"
+#         conditions:
+#           - test: "StringEquals"
+#             variable: "iam:PassedToService"
+#             values:
+#               - "ec2.amazonaws.com"
+
+#       ######################################
+#       # IAM Instance Profile Read
+#       ######################################
+#       - sid: "AllowInstanceProfileRead"
+#         effect: "Allow"
+#         actions:
+#           - "iam:GetInstanceProfile"
+#         resources:
+#           - "arn:aws:iam::{ACCOUNT_ID}:instance-profile/*"
+
+#       ######################################
+#       # IAM Instance Profile Creation
+#       ######################################
+#       - sid: "AllowScopedInstanceProfileCreation"
+#         effect: "Allow"
+#         actions:
+#           - "iam:CreateInstanceProfile"
+#         resources:
+#           - "arn:aws:iam::{ACCOUNT_ID}:instance-profile/*"
+#         conditions:
+#           - test: "StringEquals"
+#             variable: "aws:RequestTag/kubernetes.io/cluster/fmm-dev-ireland-workload-eks"
+#             values:
+#               - "owned"
+#           - test: "StringEquals"
+#             variable: "aws:RequestTag/eks:eks-cluster-name"
+#             values:
+#               - "fmm-dev-ireland-workload-eks"
+#           - test: "StringEquals"
+#             variable: "aws:RequestTag/topology.kubernetes.io/region"
+#             values:
+#               - "{REGION}"
+#           - test: "StringLike"
+#             variable: "aws:RequestTag/karpenter.k8s.aws/ec2nodeclass"
+#             values:
+#               - "*"
+
+#       ######################################
+#       # IAM Instance Profile Tagging
+#       ######################################
+#       - sid: "AllowScopedInstanceProfileTagging"
+#         effect: "Allow"
+#         actions:
+#           - "iam:TagInstanceProfile"
+#         resources:
+#           - "arn:aws:iam::{ACCOUNT_ID}:instance-profile/*"
+#         conditions:
+#           - test: "StringEquals"
+#             variable: "aws:ResourceTag/kubernetes.io/cluster/fmm-dev-ireland-workload-eks"
+#             values:
+#               - "owned"
+
+#       ######################################
+#       # IAM Instance Profile Management
+#       ######################################
+#       - sid: "AllowScopedInstanceProfileManagement"
+#         effect: "Allow"
+#         actions:
+#           - "iam:AddRoleToInstanceProfile"
+#           - "iam:RemoveRoleFromInstanceProfile"
+#           - "iam:DeleteInstanceProfile"
+#         resources:
+#           - "arn:aws:iam::{ACCOUNT_ID}:instance-profile/*"
+#         conditions:
+#           - test: "StringEquals"
+#             variable: "aws:ResourceTag/kubernetes.io/cluster/fmm-dev-ireland-workload-eks"
+#             values:
+#               - "owned"
+#           - test: "StringEquals"
+#             variable: "aws:ResourceTag/eks:eks-cluster-name"
+#             values:
+#               - "fmm-dev-ireland-workload-eks"
+#           - test: "StringEquals"
+#             variable: "aws:ResourceTag/topology.kubernetes.io/region"
+#             values:
+#               - "{REGION}"
+#           - test: "StringLike"
+#             variable: "aws:ResourceTag/karpenter.k8s.aws/ec2nodeclass"
+#             values:
+#               - "*"
+
+#       ######################################
+#       # EKS Cluster Endpoint Lookup
+#       ######################################
+#       - sid: "AllowEKSClusterLookup"
+#         effect: "Allow"
+#         actions:
+#           - "eks:DescribeCluster"
+#         resources:
+#           - "arn:aws:eks:{REGION}:{ACCOUNT_ID}:cluster/fmm-dev-ireland-workload-eks"
+
+# tags:
+#   Role: "EKS Karpenter Controller"

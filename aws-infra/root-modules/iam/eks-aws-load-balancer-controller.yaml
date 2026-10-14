@@ -1,5 +1,5 @@
-# Role: {project}-{environment}-{region_name}-role-eks-aws-load-balancer-controller
-# 참고: https://kubernetes-sigs.github.io/aws-load-balancer-controller/latest/deploy/installation/
+# Role Name: 
+# {project}-{environment}-{region_name}-eks-aws-load-balancer-controller-role
 
 services:
   - pods.eks.amazonaws.com
@@ -13,7 +13,10 @@ assume_role_actions:
   - sts:AssumeRole
   - sts:TagSession
 
-policies:
+# 참고: https://kubernetes-sigs.github.io/aws-load-balancer-controller/latest/deploy/installation/
+custom_policies:
+  # Policy Name:
+  # {project}-{environment}-{region_name}-eks-aws-load-balancer-controller-pol
   default:
     description: "AWS Load Balancer Controller IAM policy"
     statements:

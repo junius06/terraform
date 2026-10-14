@@ -10,10 +10,12 @@
 # Role을 Assume할 AWS Service
 services:
   - "<Service Endpoint Prefix>.amazonaws.com"
-  ## Ex.
+  ## ex)
   # - "ec2.amazonaws.com"
   # - "s3.amazonaws.com"
 
+assume_role_actions:
+  - "sts:AssumeRole"
 
 ######################################
 # Instance Profile
@@ -32,14 +34,21 @@ instance_profile:
 ######################################
 # AWS에서 제공하는 Managed Policy ARN
 aws_managed_policies:
-  - "arn:aws:iam:aws:policy/<service-name>"
+  - "arn:aws:iam::aws:policy/<service-name>"
 
 
 ######################################
 # Customer Managed Policies
 ######################################
-policies:
-  example-policy:
+custom_policies:
+  # Policy Name:
+  #
+  ## IAM Role에 생성하려는 Policy가 하나일 경우:
+  ## {project}-{environment}-{region_name}-pol-{yaml_file_name}
+  #
+  ## IAM Role에 생성하려는 Policy가 두 개 이상일 경우:
+  ## {project}-{environment}-{region_name}-pol-{yaml_file_name}-{policy-name}
+  policy-name:
     description: "Example customer managed policy"
 
     statements:

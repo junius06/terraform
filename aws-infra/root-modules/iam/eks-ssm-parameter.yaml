@@ -1,0 +1,43 @@
+# Role Name:
+# {project}-{environment}-{region_name}-eks-ssm-parameter-role
+
+services:
+  - "pods.eks.amazonaws.com"
+
+assume_role_actions:
+  - "sts:AssumeRole"
+  - "sts:TagSession"
+
+instance_profile:
+  enabled: false
+
+aws_managed_policies: []
+
+# 참고 : https://docs.aws.amazon.com/ko_kr/systems-manager/latest/userguide/sysman-paramstore-access.html
+custom_policies:
+  # Policy Name:
+  # {project}-{environment}-{region_name}-eks-ssm-parameter-pol
+  eks-ssm-paramstore:
+    description: "Example customer managed policy"
+
+    statements:
+      # Parameter 목록 및 메타데이터 검색
+      - sid: "DescribeParameters"
+        effect: "Allow"
+        actions:
+          - "ssm:DescribeParameters"
+        resources:
+          - "*"
+
+      # 현재 AWS 계정 및 리전의 Parameter 조회
+      - sid: "ExampleRead"
+        effect: "Allow"
+        actions:
+          - "ssm:GetParameters"
+          - "ssm:GetParameter"
+          - "ssm:GetParametersByPath"
+        resources:
+          - "Resource": "arn:aws:ssm:{REGION}:{ACCOUNT_ID}:parameter/*"
+
+tags:
+  Role: "EKS SSM Parameter"
