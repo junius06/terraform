@@ -33,6 +33,7 @@ deletion_protection: true
 # EKS Managed Node Groups
 ######################################
 node_groups:
+  # eks/node_groups/ 경로에 아래 값의 yaml파일이 존재하지 않을 경우 Error 발생
   - "obs"
   - "kpt"
 
