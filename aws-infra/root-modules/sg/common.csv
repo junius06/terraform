@@ -1,2 +1,3 @@
 vpc_name,sg_name,type,protocol,from_port,to_port,source_type,source,description
 main,eks-mgmt,egress,tcp,443,443,cidr,0.0.0.0/0,HTTPS To Anywhere
+main,eks-cluster,egress,tcp,443,443,cidr,0.0.0.0/0,HTTPS To Anywhere
