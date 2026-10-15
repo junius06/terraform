@@ -114,10 +114,3 @@ variable "cluster" {
     error_message = "When the public EKS API endpoint is enabled, explicitly supply public_access_cidrs."
   }
 }
-
-
-variable "common_tags" {
-  description = "Tags shared across EKS resources."
-  type        = map(string)
-  default     = {}
-}
