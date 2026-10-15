@@ -40,7 +40,9 @@ labels:
 # Kubernetes Taints
 ######################################
 taints: 
-  role: obs
+  - key: "role"
+    value: "obs"
+    effect: "NO_SCHEDULE"
 
 ######################################
 # Tags

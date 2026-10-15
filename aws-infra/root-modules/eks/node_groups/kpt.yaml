@@ -39,8 +39,12 @@ labels:
 ######################################
 # Kubernetes Taints
 ######################################
+# taints 미사용
+## taints: {} # List
 taints: 
-  role: kpt
+  - key: "role"
+    value: "kpt"
+    effect: "NO_SCHEDULE"
 
 ######################################
 # Tags

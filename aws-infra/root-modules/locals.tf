@@ -545,8 +545,8 @@ locals {
             {}
           )
 
-          taints = try(
-            node_group.taints,
+          taints = coalesce(
+            try(node_group.taints, null),
             []
           )
 
