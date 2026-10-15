@@ -6,7 +6,7 @@ version: "1.37"
 vpc: "main"
 
 subnet_groups:
-  - "clster"
+  - "cluster"
 
 security_groups:
   - "eks-cluster"
