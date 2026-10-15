@@ -62,7 +62,7 @@ variable "cluster" {
 
       instance_types = optional(
         list(string), 
-        ["t3.medium"]
+        ["t3g.medium"]
       )
         
       ami_type      = optional(string, "AL2023_ARM_64_STANDARD")
@@ -87,7 +87,7 @@ variable "cluster" {
       })), [])
 
       tags = optional(map(string), {})
-    })))
+    })), {})
     
     # Tags for the EKS cluster resource
     tags = optional(map(string), {})
@@ -95,22 +95,41 @@ variable "cluster" {
   default = {}
 
   validation {
-    condition = length(var.cluster.subnet_ids) >= 2 && length(distinct(var.cluster.subnet_ids)) >= 2
-    error_message = "Provide at least two distinct EKS cluster subnet IDs in different availability zones."
+    condition = alltrue([
+      for cluster_key, cluster in var.cluster :
+      length(cluster.subnet_ids) >= 2 &&
+      length(distinct(cluster.subnet_ids)) >= 2
+    ])
+    error_message = "Each EKS Cluster must have at least two distinct subnet IDs."
+  }
+  
+  validation {
+    condition = alltrue([
+      for cluster_key, cluster in var.cluster :
+      contains(
+        ["CONFIG_MAP", "API", "API_AND_CONFIG_MAP"],
+        cluster.authentication_mode
+      )
+    ])
+    error_message = "authentication_mode must be CONFIG_MAP, API, or API_AND_CONFIG_MAP"
   }
 
   validation {
-    condition = contains(["CONFIG_MAP", "API", "API_AND_CONFIG_MAP"], var.cluster.authentication_mode)
-    error_message = "authentication_mode must be CONFIG_MAP, API, or API_AND_CONFIG_MAP."
-  }
+    condition = alltrue([
+      for cluster_key, cluster in var.cluster :
+      cluster.endpoint_private_access ||
+      cluster.endpoint_public_access
+    ])
 
-  validation {
-    condition = var.cluster.endpoint_private_access || var.cluster.endpoint_public_access
     error_message = "At least one EKS API endpoint access mode must be enabled."
   }
 
   validation {
-    condition = !var.cluster.endpoint_public_access || length(var.cluster.public_access_cidrs) > 0
+    condition = alltrue([
+      for cluster_key, cluster in var.cluster :
+      !cluster.endpoint_public_access ||
+      length(cluster.public_access_cidrs) > 0
+    ])
     error_message = "When the public EKS API endpoint is enabled, explicitly supply public_access_cidrs."
   }
 }
