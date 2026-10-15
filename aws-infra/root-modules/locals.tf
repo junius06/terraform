@@ -450,7 +450,7 @@ locals {
 
       subnet_ids = flatten([
         for subnet_group in cluster.subnet_groups :
-        module.private_subnet_ids[cluster.vpc][subnet_group]
+        local.private_subnet_ids[cluster.vpc][subnet_group]
       ])
 
       security_group_ids = [
@@ -510,7 +510,7 @@ locals {
 
           subnet_ids = flatten([
             for subnet_group in node_group.subnet_groups :
-            module.private_subnet_ids[cluster.vpc][subnet_group]
+            local.private_subnet_ids[cluster.vpc][subnet_group]
           ])
 
           instance_types = try(
