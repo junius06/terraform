@@ -45,6 +45,29 @@ locals {
   }
 }
 
+
+######################################
+# VPC Subnet Group Mapping
+######################################
+# Private Subnet
+locals {
+  private_subnet_ids = {
+    for vpc_key, vpc in module.vpc :
+    vpc_key => {
+      for subnet_group in distinct([
+        for subnet in values(vpc.private_subnet_id) :
+        subnet.subnet_name
+      ]) :
+
+      subnet_group => [
+        for subnet_key, subnet in vpc.private_subnet_id :
+        subnet.id
+        if subnet.subnet_name == subnet_group
+      ]
+    }
+  }
+}
+
 ######################################
 # VPC Peering
 ######################################
@@ -427,7 +450,7 @@ locals {
 
       subnet_ids = flatten([
         for subnet_group in cluster.subnet_groups :
-        module.vpc.private_subnet_id[cluster.vpc][subnet_group]
+        module.private_subnet_ids[cluster.vpc][subnet_group]
       ])
 
       security_group_ids = [
@@ -487,7 +510,7 @@ locals {
 
           subnet_ids = flatten([
             for subnet_group in node_group.subnet_groups :
-            module.vpc.private_subnet_id[cluster.vpc][subnet_group]
+            module.private_subnet_ids[cluster.vpc][subnet_group]
           ])
 
           instance_types = try(
